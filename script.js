@@ -370,29 +370,41 @@ function render() {
     fields.ownVsRentBox.innerHTML = '<p class="empty-state">fill in a price above to see this</p>';
   } else {
     const ownYears = ownMonths / 12;
+    const horizonLabel = formatYM(ownMonths);
     const amort = amortize(loanAmount, rate, term, mortgageType, ownMonths, price, deductionRate);
     const principalPaid = loanAmount - amort.balance;
     const appreciationGain = price * (Math.pow(1 + appreciationPct / 100, ownYears) - 1);
     const monthlyCost = payment + hoaFee + maintenanceMonthly;
+    const totalMonthlyCost = monthlyCost * ownMonths;
+    const totalCost = kostenKoper + totalMonthlyCost;
     const rentCost = rent * ownMonths;
     const totalPayments = principalPaid + amort.cumInterest;
     const principalPct = totalPayments > 0 ? (principalPaid / totalPayments) * 100 : 0;
     const interestPct = totalPayments > 0 ? (amort.cumInterest / totalPayments) * 100 : 0;
     const rebatePct = amort.cumInterest > 0 ? (amort.cumTaxBenefit / amort.cumInterest) * 100 : 0;
-    const wealthBuilt = principalPaid + appreciationGain;
+    const netInterestPaid = amort.cumInterest - amort.cumTaxBenefit;
+    const netFinancingCost = netInterestPaid - appreciationGain;
 
     const box = fields.ownVsRentBox;
-    addMilestoneRow(box, 'upfront cost', `− ${euro(kostenKoper)}`);
-    addMilestoneRow(box, 'monthly cost (EMI + HOA + insurance)', `${euro(monthlyCost)} /mo`);
-    addMilestoneRow(box, 'tax rebate', `+ ${euro(amort.cumTaxBenefit)}`, { pct: `${rebatePct.toFixed(0)}% of interest recovered`, groupStart: true });
-    addMilestoneRow(box, 'interest paid', `− ${euro(amort.cumInterest)}`, { pct: `${interestPct.toFixed(0)}% of payments` });
-    addMilestoneRow(box, 'principal paid', `+ ${euro(principalPaid)}`, { pct: `${principalPct.toFixed(0)}% of payments` });
-    addMilestoneRow(box, 'home value gain', `+ ${euro(appreciationGain)}`, { pct: `${appreciationPct.toFixed(1)}%/yr` });
+    addMilestoneRow(box, 'upfront buying cost', `− ${euro(kostenKoper)}`);
+    addMilestoneRow(box, 'per month cost (EMI + HOA + insurance)', `${euro(monthlyCost)} /mo`);
+    addMilestoneRow(box, `total monthly cost for ${horizonLabel}`, `− ${euro(totalMonthlyCost)}`);
 
-    const total = document.createElement('div');
-    total.className = 'milestone-total';
-    total.innerHTML = `<span>principal + appreciation built</span><span class="val">${euro(wealthBuilt)}</span>`;
-    box.appendChild(total);
+    const totalCostRow = document.createElement('div');
+    totalCostRow.className = 'milestone-total';
+    totalCostRow.innerHTML = `<span>total cost</span><span class="val">− ${euro(totalCost)}</span>`;
+    box.appendChild(totalCostRow);
+
+    addMilestoneRow(box, 'total principal paid', `+ ${euro(principalPaid)}`, { pct: `${principalPct.toFixed(0)}% of payments` });
+    addMilestoneRow(box, 'total interest paid', `− ${euro(amort.cumInterest)}`, { pct: `${interestPct.toFixed(0)}% of payments` });
+    addMilestoneRow(box, 'total tax rebate', `+ ${euro(amort.cumTaxBenefit)}`, { pct: `${rebatePct.toFixed(0)}% of interest recovered` });
+    addMilestoneRow(box, 'net interest paid', `− ${euro(netInterestPaid)}`, { pct: 'total interest − total tax rebate' });
+    addMilestoneRow(box, 'total home value gain', `+ ${euro(appreciationGain)}`, { pct: `${appreciationPct.toFixed(1)}%/yr` });
+
+    const financingRow = document.createElement('div');
+    financingRow.className = 'milestone-total';
+    financingRow.innerHTML = `<span>net interest paid − home value gain</span><span class="val">${netFinancingCost >= 0 ? '−' : '+'} ${euro(Math.abs(netFinancingCost))}</span>`;
+    box.appendChild(financingRow);
     addMilestoneRow(box, 'rent paid, same period', rent > 0 ? `− ${euro(rentCost)}` : '—');
 
     const verdict = document.createElement('div');
@@ -400,7 +412,7 @@ function render() {
     if (rent <= 0) {
       verdict.textContent = 'enter a comparable rent above to compare';
     } else {
-      const diff = wealthBuilt - rentCost;
+      const diff = rentCost - netFinancingCost;
       verdict.innerHTML = `${diff >= 0 ? 'buying' : 'renting'} ahead by<strong>${euro(Math.abs(diff))}</strong>`;
     }
     box.appendChild(verdict);
