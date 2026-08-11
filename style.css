@@ -111,48 +111,6 @@ body {
   color: var(--muted);
 }
 
-/* ---------- bookmarklet ---------- */
-
-.bookmarklet-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 14px;
-  padding-bottom: 14px;
-  border-bottom: 1px dashed var(--border);
-}
-
-.bookmarklet-btn {
-  display: inline-block;
-  flex-shrink: 0;
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  color: var(--ink);
-  border: 1px solid var(--border-strong);
-  border-radius: 2px;
-  padding: 8px 12px;
-  cursor: grab;
-  background: var(--paper-alt);
-}
-
-.bookmarklet-btn:hover {
-  background: var(--ink);
-  color: var(--paper);
-  border-color: var(--ink);
-}
-
-.bookmarklet-help {
-  margin: 0;
-  font-size: 11.5px;
-  color: var(--muted);
-  line-height: 1.4;
-}
-
 /* ---------- form fields ---------- */
 
 .from-row {
@@ -190,11 +148,10 @@ body {
 }
 
 .field-hint {
-  margin: 6px 0 0;
+  margin: -2px 0 10px;
   font-size: 11.5px;
   color: var(--muted);
   line-height: 1.4;
-  visibility: hidden;
 }
 
 input, select {
@@ -211,7 +168,7 @@ input, select {
   font-variant-numeric: tabular-nums;
 }
 
-#address, #fundaLink {
+#address {
   font-family: 'IBM Plex Sans', -apple-system, sans-serif;
   font-variant-numeric: normal;
 }
@@ -309,6 +266,18 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 8px;
+}
+
+.section-divider {
+  margin: 16px 0 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 /* ---------- results ---------- */

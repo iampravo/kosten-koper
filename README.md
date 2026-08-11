@@ -2,22 +2,22 @@
 
 A single-page calculator for what a Dutch listing actually costs — transfer tax, NHG, mortgage payment net of the interest deduction, upfront cash needed, and the break-even point against renting. Built to replace doing this math by hand every time a new Funda listing shows up.
 
+You enter the property details yourself; the fields are compact enough that copying price/address/m² off a listing takes a few seconds.
+
 **Live: https://kosten-koper.vercel.app**
 
 ## Features
 
-- **Import from Funda** — a bookmarklet reads the price, address, HOA fee, and living area straight out of a listing page you're already viewing (via its embedded `schema.org` data and features table) and hands them to the calculator. No server-side scraping — Funda blocks that outright.
+- **Property fact sheet** — address, price, living area, plot size, bedrooms, year built, energy label, and new-build vs. existing, all in one compact section.
+- **New-build aware** — *nieuwbouw* (v.o.n.) properties skip transfer tax entirely (VAT is already priced in), unlike existing homes.
 - **Per-buyer transfer tax** — models the 2026 rules correctly: 0% *overdrachtsbelasting* per buyer under 35 buying a first home under €555,000, 2% otherwise, applied to each buyer's own ownership share.
 - **NHG-aware** — flags eligibility against the €470,000 cap, adds the 0.4% one-time premium when used.
 - **Mortgage interest deduction, net of eigenwoningforfait** — annuity or linear, year-1 estimate, at your marginal rate (default 37.56%, the 2026 cap).
-- **Full kosten koper breakdown** — notary, valuation, mortgage advice, optional structural survey, all editable — down to one "cash needed upfront" number.
+- **Full kosten koper breakdown** — notary, valuation, mortgage advice, structural survey, plus optional move-in, renovation, and extra-checks (foundation/asbestos/electrical) budgets — all editable, down to one "cash needed upfront" number.
 - **Rent vs. buy break-even** — enter a comparable rent, see the month buying overtakes it once upfront costs are paid off.
+- Live NL-formatted number inputs (thousand separators as you type, comma-decimal rates accepted).
 - Bold monochrome "ledger" design — Fraunces + IBM Plex Mono/Sans, hairline rules, no external requests beyond fonts.
-- Zero build step, zero backend — everything computes client-side.
-
-## Using the Funda import
-
-Drag the "＋ import from funda" button into your bookmarks bar once. Then, on any funda.nl listing page, click it — it opens this calculator in a new tab with the fields pre-filled. Every field stays editable, and manual entry always works without it.
+- Zero build step, zero backend — everything computes client-side, entirely manual entry (Funda blocks server-side scraping, so there's no "paste a link" shortcut here — see git history for the bookmarklet-based approach that was tried and removed).
 
 ## Stack
 

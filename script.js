@@ -15,8 +15,6 @@ const fields = {
   price: el('price'),
   livingArea: el('livingArea'),
   hoaFee: el('hoaFee'),
-  fundaLink: el('fundaLink'),
-  importStatus: el('importStatus'),
 
   buyer1Age: el('buyer1Age'),
   buyer1Share: el('buyer1Share'),
@@ -38,6 +36,9 @@ const fields = {
   valuationFee: el('valuationFee'),
   advisorFee: el('advisorFee'),
   surveyFee: el('surveyFee'),
+  moveInFee: el('moveInFee'),
+  renovationFee: el('renovationFee'),
+  checksFee: el('checksFee'),
   upfrontResults: el('upfrontResults'),
   totalUpfrontValue: el('totalUpfrontValue'),
 
@@ -51,6 +52,7 @@ const fields = {
 
 let buyerCount = 2;
 let mortgageType = 'annuity';
+let constructionType = 'existing';
 
 // Whole-euro fields (price, fees, rent): strip every non-digit — works
 // whether someone types "600000", "600.000" (NL thousands), or "600,000".
@@ -104,7 +106,8 @@ function attachEuroFormatting(input) {
 
 const EURO_FIELD_IDS = [
   'price', 'hoaFee', 'downPayment', 'notaryFee', 'valuationFee',
-  'advisorFee', 'surveyFee', 'comparableRent',
+  'advisorFee', 'surveyFee', 'moveInFee', 'renovationFee', 'checksFee',
+  'comparableRent',
 ];
 
 function pct(n) {
@@ -142,11 +145,15 @@ function getBuyers() {
       starter: fields.buyer2Starter.checked,
     });
   }
+  const newBuild = constructionType === 'new';
   return buyers.map((b) => {
+    if (newBuild) {
+      return { ...b, eligible: false, newBuild: true, rate: 0, tax: 0 };
+    }
     const eligible = b.starter && b.age > 0 && b.age < STARTER_MAX_AGE && price > 0 && price <= STARTER_PRICE_CAP;
     const rate = eligible ? 0 : STANDARD_TRANSFER_RATE;
     const sharePrice = price * (b.share / 100);
-    return { ...b, eligible, rate, tax: sharePrice * rate };
+    return { ...b, eligible, newBuild: false, rate, tax: sharePrice * rate };
   });
 }
 
@@ -194,19 +201,31 @@ function render() {
   const valuation = parseInt_(fields.valuationFee.value);
   const advisor = parseInt_(fields.advisorFee.value);
   const survey = parseInt_(fields.surveyFee.value);
+  const moveIn = parseInt_(fields.moveInFee.value);
+  const renovation = parseInt_(fields.renovationFee.value);
+  const checks = parseInt_(fields.checksFee.value);
   const nhgPremium = nhgOn ? loanAmount * NHG_PREMIUM_RATE : 0;
 
   fields.upfrontResults.innerHTML = '';
-  buyers.forEach((b, i) => {
-    const label = buyers.length > 1 ? `transfer tax — buyer ${i + 1}` : 'transfer tax (overdrachtsbelasting)';
-    const sub = b.eligible ? 'starter exemption applied · 0%' : `standard rate · ${pct(b.rate * 100)}`;
-    fields.upfrontResults.appendChild(resultRow(label, sub, euro(b.tax)));
-  });
+  if (buyers[0]?.newBuild) {
+    fields.upfrontResults.appendChild(
+      resultRow('transfer tax (overdrachtsbelasting)', 'new construction — VAT included, no transfer tax', euro(0))
+    );
+  } else {
+    buyers.forEach((b, i) => {
+      const label = buyers.length > 1 ? `transfer tax — buyer ${i + 1}` : 'transfer tax (overdrachtsbelasting)';
+      const sub = b.eligible ? 'starter exemption applied · 0%' : `standard rate · ${pct(b.rate * 100)}`;
+      fields.upfrontResults.appendChild(resultRow(label, sub, euro(b.tax)));
+    });
+  }
   if (nhgOn) {
     fields.upfrontResults.appendChild(resultRow('NHG premium', '0.4% of loan amount, one-time', euro(nhgPremium)));
   }
+  if (moveIn > 0) fields.upfrontResults.appendChild(resultRow('move-in', null, euro(moveIn)));
+  if (renovation > 0) fields.upfrontResults.appendChild(resultRow('renovation', null, euro(renovation)));
+  if (checks > 0) fields.upfrontResults.appendChild(resultRow('extra checks', null, euro(checks)));
 
-  const kostenKoper = transferTaxTotal + notary + valuation + advisor + survey + nhgPremium;
+  const kostenKoper = transferTaxTotal + notary + valuation + advisor + survey + moveIn + renovation + checks + nhgPremium;
   const totalUpfront = kostenKoper + downPayment;
   fields.totalUpfrontValue.textContent = price > 0 ? euro(totalUpfront) : '—';
 
@@ -264,81 +283,26 @@ function debounce(fn, wait) {
   };
 }
 
-// ---------- bookmarklet ----------
-
-// Reads a Funda listing's <dl><dt>/<dd> feature table (works in NL or
-// Chrome-translated EN — translation preserves the tag structure) plus its
-// schema.org JSON-LD, and opens this site with the extracted fields.
-function bookmarkletSource(siteUrl) {
-  return `(function(){try{function grabDL(labels){var dls=document.querySelectorAll('dl');for(var i=0;i<dls.length;i++){var dts=dls[i].querySelectorAll('dt');var dds=dls[i].querySelectorAll('dd');for(var j=0;j<dts.length;j++){var key=(dts[j].textContent||'').trim().toLowerCase();for(var k=0;k<labels.length;k++){if(key.indexOf(labels[k])!==-1){return(dds[j]&&dds[j].textContent||'').trim();}}}}return null;}var price=null,addr=null;var lds=document.querySelectorAll('script[type="application/ld+json"]');for(var i=0;i<lds.length;i++){try{var j=JSON.parse(lds[i].textContent);var arr=Array.isArray(j)?j:[j];for(var k=0;k<arr.length;k++){var o=arr[k];if(o&&o.offers&&o.offers.price)price=o.offers.price;if(o&&o.address)addr=(o.address.streetAddress||'')+(o.address.addressLocality?(', '+o.address.addressLocality):'');}}catch(e){}}var d={a:addr,p:price||grabDL(['asking price','vraagprijs']),hoa:grabDL(['vve','homeowners']),liv:grabDL(['wonen','living']),url:location.href};var b64=btoa(unescape(encodeURIComponent(JSON.stringify(d))));window.open('${siteUrl}?import='+b64,'_blank');}catch(e){alert('Could not read this listing — enter details manually.');}})();`;
-}
-
-function setupBookmarklet() {
-  const siteUrl = `${location.origin}${location.pathname}`;
-  el('bookmarkletLink').href = 'javascript:' + encodeURIComponent(bookmarkletSource(siteUrl));
-}
-
-// Funda's scraped text (e.g. "€242.00 per month") always uses a period as
-// the decimal point regardless of page language, unlike what a person types.
-function parseImportNumber(raw) {
-  if (raw == null) return 0;
-  const cleaned = String(raw).replace(/[^\d.-]/g, '');
-  const value = parseFloat(cleaned);
-  return Number.isFinite(value) ? value : 0;
-}
-
-function applyImport(data) {
-  if (data.a) fields.address.value = data.a;
-  if (data.p) fields.price.value = formatEuroValue(String(Math.round(data.p)));
-  if (data.hoa) {
-    const n = Math.round(parseImportNumber(data.hoa));
-    if (n > 0) fields.hoaFee.value = formatEuroValue(String(n));
-  }
-  if (data.liv) {
-    const n = Math.round(parseImportNumber(data.liv));
-    if (n > 0) fields.livingArea.value = String(n);
-  }
-  if (data.url) fields.fundaLink.value = data.url;
-  fields.importStatus.textContent = 'imported from funda ✓';
-}
-
-function parseImportFromUrl() {
-  const params = new URLSearchParams(location.search);
-  const payload = params.get('import');
-  if (!payload) return;
-  try {
-    const json = decodeURIComponent(escape(atob(payload)));
-    applyImport(JSON.parse(json));
-  } catch {
-    fields.importStatus.textContent = 'could not read import link — enter details manually';
-  }
-  const url = new URL(location.href);
-  url.searchParams.delete('import');
-  history.replaceState({}, '', url);
-}
-
 // ---------- wiring ----------
 
-const FUNDA_URL_RE = /^https?:\/\/(www\.)?funda\.nl\//i;
-
 function init() {
-  setupBookmarklet();
-
   EURO_FIELD_IDS.forEach((id) => {
     const input = el(id);
     input.value = formatEuroValue(input.value.replace(/\D/g, ''));
     attachEuroFormatting(input);
   });
 
-  parseImportFromUrl();
-
   const debouncedRender = debounce(render, 80);
   document.querySelectorAll('input').forEach((input) => {
     input.addEventListener('input', debouncedRender);
   });
 
-  fields.fundaLink.addEventListener('input', () => {
-    el('fundaLinkHint').style.visibility = FUNDA_URL_RE.test(fields.fundaLink.value.trim()) ? 'visible' : 'hidden';
+  el('constructionToggle').querySelectorAll('.toggle-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      constructionType = btn.dataset.type;
+      el('constructionToggle').querySelectorAll('.toggle-btn').forEach((b) => b.classList.toggle('selected', b === btn));
+      render();
+    });
   });
 
   el('buyerCountToggle').querySelectorAll('.toggle-btn').forEach((btn) => {

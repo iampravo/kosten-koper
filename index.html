@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>kosten koper</title>
-<meta name="description" content="Import a Funda listing and see the real monthly cost of buying it in the Netherlands — transfer tax, NHG, mortgage interest deduction, and rent-vs-buy break-even.">
+<meta name="description" content="See the real monthly cost of buying a home in the Netherlands — transfer tax, NHG, mortgage interest deduction, and rent-vs-buy break-even.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -19,26 +19,6 @@
 
     <div class="dashboard">
       <div class="col col-inputs">
-
-        <section class="card">
-          <div class="card-head">
-            <label>import</label>
-            <span class="hint" id="importStatus"></span>
-          </div>
-
-          <div class="bookmarklet-row">
-            <a class="bookmarklet-btn" id="bookmarkletLink" href="#" title="Drag this to your bookmarks bar">＋ import from funda</a>
-            <p class="bookmarklet-help">drag to your bookmarks bar once → click it on any funda listing. fills in the property section below.</p>
-          </div>
-
-          <div class="from-row">
-            <div class="field field-grow">
-              <label for="fundaLink">funda link</label>
-              <input type="url" id="fundaLink" placeholder="https://www.funda.nl/detail/..." autocomplete="off">
-              <p class="field-hint" id="fundaLinkHint">funda blocks direct fetches — paste is just for reference, use the bookmarklet above to actually pull details</p>
-            </div>
-          </div>
-        </section>
 
         <section class="card">
           <div class="card-head">
@@ -57,7 +37,7 @@
               <input type="text" id="price" inputmode="numeric" placeholder="480.000" autocomplete="off">
             </div>
             <div class="field">
-              <label for="livingArea">m²</label>
+              <label for="livingArea">living (m²)</label>
               <input type="text" id="livingArea" inputmode="numeric" placeholder="107" autocomplete="off">
             </div>
             <div class="field">
@@ -65,11 +45,51 @@
               <input type="text" id="hoaFee" inputmode="numeric" value="0" autocomplete="off">
             </div>
           </div>
+          <div class="from-row from-row-3">
+            <div class="field">
+              <label for="plotSize">plot (m²)</label>
+              <input type="text" id="plotSize" inputmode="numeric" placeholder="0" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="bedrooms">bedrooms</label>
+              <input type="text" id="bedrooms" inputmode="numeric" placeholder="3" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="yearBuilt">built</label>
+              <input type="text" id="yearBuilt" inputmode="numeric" placeholder="1998" autocomplete="off">
+            </div>
+          </div>
+          <div class="from-row">
+            <div class="field">
+              <label>build</label>
+              <div class="toggle-pair" id="constructionToggle">
+                <button type="button" class="toggle-btn selected" data-type="existing">existing</button>
+                <button type="button" class="toggle-btn" data-type="new">new build</button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="energyLabel">energy label</label>
+              <select id="energyLabel">
+                <option value="">—</option>
+                <option>A++++</option>
+                <option>A+++</option>
+                <option>A++</option>
+                <option>A+</option>
+                <option>A</option>
+                <option>B</option>
+                <option>C</option>
+                <option>D</option>
+                <option>E</option>
+                <option>F</option>
+                <option>G</option>
+              </select>
+            </div>
+          </div>
         </section>
 
         <section class="card">
           <div class="card-head">
-            <label>buyers</label>
+            <label>buyers &amp; financing</label>
             <div class="toggle-pair" id="buyerCountToggle">
               <button type="button" class="toggle-btn" data-count="1">1</button>
               <button type="button" class="toggle-btn selected" data-count="2">2</button>
@@ -113,12 +133,9 @@
               </label>
             </div>
           </div>
-        </section>
 
-        <section class="card">
-          <div class="card-head">
-            <label>financing</label>
-          </div>
+          <div class="section-divider">financing</div>
+
           <div class="from-row">
             <div class="field">
               <label for="downPayment">down payment (€)</label>
@@ -185,6 +202,21 @@
               <input type="text" id="surveyFee" inputmode="numeric" value="0" autocomplete="off">
             </div>
           </div>
+          <div class="from-row from-row-3 costs-row">
+            <div class="field">
+              <label for="moveInFee">move-in (€)</label>
+              <input type="text" id="moveInFee" inputmode="numeric" value="0" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="renovationFee">renovation (€)</label>
+              <input type="text" id="renovationFee" inputmode="numeric" value="0" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="checksFee">extra checks (€)</label>
+              <input type="text" id="checksFee" inputmode="numeric" value="0" autocomplete="off">
+            </div>
+          </div>
+          <p class="field-hint">extra checks: foundation, asbestos, electrical — beyond the standard structural survey</p>
           <div class="result-row total-row" id="totalUpfrontRow">
             <div class="result-label">
               <span class="result-code">cash needed upfront</span>
