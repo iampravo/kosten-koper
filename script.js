@@ -384,7 +384,6 @@ function render() {
     const interestPct = totalPayments > 0 ? (amort.cumInterest / totalPayments) * 100 : 0;
     const rebatePct = amort.cumInterest > 0 ? (amort.cumTaxBenefit / amort.cumInterest) * 100 : 0;
     const netInterestPaid = amort.cumInterest - amort.cumTaxBenefit;
-    const netFinancingCost = netInterestPaid - appreciationGain;
     const emiPctLabel = `of total monthly EMI for ${horizonLabel}`;
 
     const box = fields.ownVsRentBox;
@@ -411,10 +410,18 @@ function render() {
     assetRow.innerHTML = `<span>total asset made</span><span class="val">${euro(totalAssetMade)}</span>`;
     box.appendChild(assetRow);
 
-    const financingRow = document.createElement('div');
-    financingRow.className = 'milestone-total';
-    financingRow.innerHTML = `<span>net interest paid − home value gain</span><span class="val">${netFinancingCost >= 0 ? '−' : '+'} ${euro(Math.abs(netFinancingCost))}</span>`;
-    box.appendChild(financingRow);
+    // What actually left your pocket, net of what came back as equity
+    // (principal), a refund (tax rebate), or a paper gain (appreciation).
+    const pocketOut = totalCost - principalPaid - amort.cumTaxBenefit - appreciationGain;
+    const pocketRow = document.createElement('div');
+    pocketRow.className = 'milestone-total';
+    pocketRow.innerHTML = `<span>money out of pocket (net)</span><span class="val">${pocketOut >= 0 ? '−' : '+'} ${euro(Math.abs(pocketOut))}</span>`;
+    box.appendChild(pocketRow);
+    const pocketNote = document.createElement('div');
+    pocketNote.className = 'milestone-caption';
+    pocketNote.textContent = 'total cost − principal paid − tax rebate − home value gain';
+    box.appendChild(pocketNote);
+
     addMilestoneRow(box, 'rent paid, same period', rent > 0 ? `− ${euro(rentCost)}` : '—');
 
     const verdict = document.createElement('div');
@@ -422,7 +429,7 @@ function render() {
     if (rent <= 0) {
       verdict.textContent = 'enter a comparable rent above to compare';
     } else {
-      const diff = rentCost - netFinancingCost;
+      const diff = rentCost - pocketOut;
       verdict.innerHTML = `${diff >= 0 ? 'buying' : 'renting'} ahead by<strong>${euro(Math.abs(diff))}</strong>`;
     }
     box.appendChild(verdict);

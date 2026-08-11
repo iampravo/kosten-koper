@@ -440,6 +440,14 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
   margin-left: 4px;
 }
 
+.milestone-caption {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 2px;
+}
+
 /* ---------- milestones (resell) ---------- */
 
 .milestone-grid {
