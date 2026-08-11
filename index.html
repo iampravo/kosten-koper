@@ -281,7 +281,7 @@
     <section class="card card-wide">
       <div class="card-head">
         <label>sell after...</label>
-        <span class="hint">same home-value growth assumption as above</span>
+        <span class="hint">same home-value growth assumption as above · profit or loss if you sell at this point</span>
       </div>
       <div class="from-row">
         <div class="field field-grow">
@@ -289,7 +289,14 @@
           <input type="text" id="sellingCostPct" inputmode="decimal" value="1.3" autocomplete="off">
         </div>
       </div>
-      <div class="milestone-grid" id="resellGrid"></div>
+
+      <div class="slider-row">
+        <label for="resellSlider">time horizon</label>
+        <span class="slider-value" id="resellSliderLabel">3 years</span>
+        <input type="range" id="resellSlider" min="1" max="360" value="36" step="1">
+      </div>
+
+      <div class="own-rent-box" id="resellBox"></div>
     </section>
 
     <section class="card card-wide">

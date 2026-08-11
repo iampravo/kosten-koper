@@ -53,7 +53,9 @@ const fields = {
   ownVsRentBox: el('ownVsRentBox'),
 
   sellingCostPct: el('sellingCostPct'),
-  resellGrid: el('resellGrid'),
+  resellSlider: el('resellSlider'),
+  resellSliderLabel: el('resellSliderLabel'),
+  resellBox: el('resellBox'),
 };
 
 let buyerCount = 2;
@@ -227,33 +229,6 @@ function amortize(loanAmount, annualRatePct, termYears, type, months, price, ded
   return { balance, cumInterest, cumTaxBenefit };
 }
 
-// The net financial result of owning for `years`, vs. having done nothing
-// with the money: home value change, minus every real cost (upfront fees,
-// interest net of its tax benefit, HOA/maintenance). Principal repayment is
-// deliberately excluded — it converts cash into equity, it isn't a cost.
-function ownershipGain(years, ctx) {
-  const months = years * 12;
-  const { cumInterest, cumTaxBenefit } = amortize(
-    ctx.loanAmount, ctx.rate, ctx.term, ctx.mortgageType, months, ctx.price, ctx.deductionRate
-  );
-  const appreciationGain = ctx.price * (Math.pow(1 + ctx.appreciationPct / 100, years) - 1);
-  const ongoingCosts = months * (ctx.hoaFee + ctx.maintenanceMonthly);
-  const netInterest = cumInterest - cumTaxBenefit;
-  return {
-    appreciationGain,
-    ongoingCosts,
-    netInterest,
-    gain: appreciationGain - ctx.kostenKoper - netInterest - ongoingCosts,
-  };
-}
-
-function milestoneCard(label) {
-  const card = document.createElement('div');
-  card.className = 'milestone';
-  card.innerHTML = `<div class="milestone-label">${label}</div>`;
-  return card;
-}
-
 function addMilestoneRow(card, label, value, opts) {
   const { pct, groupStart } = opts || {};
   const row = document.createElement('div');
@@ -270,6 +245,67 @@ function formatYM(months) {
   if (y === 0) return `${m} month${m === 1 ? '' : 's'}`;
   if (m === 0) return `${y} year${y === 1 ? '' : 's'}`;
   return `${y}y ${m}m`;
+}
+
+// Shared by "own vs. rent" and "sell after..." — both boil down to the same
+// question (what did owning for this long actually cost or make you) up to
+// the point where they diverge: one compares that against rent, the other
+// against what selling would net you. Renders every row through "money out
+// of pocket (net)" and hands back the numbers the caller needs to finish.
+function renderOwnershipBreakdown(box, months, ctx) {
+  const { price, loanAmount, rate, term, mortgageType, deductionRate, hoaFee, maintenanceMonthly, kostenKoper, appreciationPct, payment } = ctx;
+  const years = months / 12;
+  const horizonLabel = formatYM(months);
+  const amort = amortize(loanAmount, rate, term, mortgageType, months, price, deductionRate);
+  const principalPaid = loanAmount - amort.balance;
+  const appreciationGain = price * (Math.pow(1 + appreciationPct / 100, years) - 1);
+  const monthlyCost = payment + hoaFee + maintenanceMonthly;
+  const totalMonthlyEMI = payment * months;
+  const totalMonthlyCost = monthlyCost * months;
+  const totalCost = kostenKoper + totalMonthlyCost;
+  const totalPayments = principalPaid + amort.cumInterest;
+  const principalPct = totalPayments > 0 ? (principalPaid / totalPayments) * 100 : 0;
+  const interestPct = totalPayments > 0 ? (amort.cumInterest / totalPayments) * 100 : 0;
+  const rebatePct = amort.cumInterest > 0 ? (amort.cumTaxBenefit / amort.cumInterest) * 100 : 0;
+  const netInterestPaid = amort.cumInterest - amort.cumTaxBenefit;
+  const emiPctLabel = `of total monthly EMI for ${horizonLabel}`;
+
+  addMilestoneRow(box, 'upfront buying cost', `− ${euro(kostenKoper)}`);
+  addMilestoneRow(box, 'per month EMI', `${euro(payment)} /mo`);
+  addMilestoneRow(box, 'per month cost (EMI + HOA + insurance)', `${euro(monthlyCost)} /mo`);
+  addMilestoneRow(box, `total monthly EMI for ${horizonLabel}`, `− ${euro(totalMonthlyEMI)}`);
+  addMilestoneRow(box, `total monthly cost for ${horizonLabel}`, `− ${euro(totalMonthlyCost)}`);
+
+  const totalCostRow = document.createElement('div');
+  totalCostRow.className = 'milestone-total';
+  totalCostRow.innerHTML = `<span>total cost</span><span class="val">− ${euro(totalCost)}</span>`;
+  box.appendChild(totalCostRow);
+
+  addMilestoneRow(box, 'total principal paid', `+ ${euro(principalPaid)}`, { pct: `${principalPct.toFixed(0)}% ${emiPctLabel}` });
+  addMilestoneRow(box, 'total interest paid', `− ${euro(amort.cumInterest)}`, { pct: `${interestPct.toFixed(0)}% ${emiPctLabel}` });
+  addMilestoneRow(box, 'total tax rebate', `+ ${euro(amort.cumTaxBenefit)}`, { pct: `${rebatePct.toFixed(0)}% of interest recovered` });
+  addMilestoneRow(box, 'net interest paid', `− ${euro(netInterestPaid)}`, { pct: 'total interest − total tax rebate' });
+  addMilestoneRow(box, 'total home value gain', `+ ${euro(appreciationGain)}`, { pct: `${appreciationPct.toFixed(1)}%/yr` });
+
+  const totalAssetMade = principalPaid + appreciationGain;
+  const assetRow = document.createElement('div');
+  assetRow.className = 'milestone-total';
+  assetRow.innerHTML = `<span>total asset made</span><span class="val">${euro(totalAssetMade)}</span>`;
+  box.appendChild(assetRow);
+
+  // What actually left your pocket, net of what came back as equity
+  // (principal), a refund (tax rebate), or a paper gain (appreciation).
+  const pocketOut = totalCost - principalPaid - amort.cumTaxBenefit - appreciationGain;
+  const pocketRow = document.createElement('div');
+  pocketRow.className = 'milestone-total';
+  pocketRow.innerHTML = `<span>money out of pocket (net)</span><span class="val">${pocketOut >= 0 ? '−' : '+'} ${euro(Math.abs(pocketOut))}</span>`;
+  box.appendChild(pocketRow);
+  const pocketNote = document.createElement('div');
+  pocketNote.className = 'milestone-caption';
+  pocketNote.textContent = 'total cost − principal paid − tax rebate − home value gain';
+  box.appendChild(pocketNote);
+
+  return { pocketOut, totalAssetMade, appreciationGain };
 }
 
 // ---------- render ----------
@@ -349,17 +385,15 @@ function render() {
   fields.monthlyResults.appendChild(resultRow('insurance & maintenance', `${maintenancePct}%/yr of price`, euro(maintenanceMonthly)));
   fields.netMonthlyValue.textContent = price > 0 ? euro(netMonthly) : '—';
 
-  // ---- own vs. rent, and resell scenarios ----
+  // ---- own vs. rent, and sell-after scenarios ----
   const rent = parseInt_(fields.comparableRent.value);
   const appreciationPct = parseRate(fields.appreciationRate.value);
   const sellingCostPct = parseRate(fields.sellingCostPct.value);
 
-  const gainCtx = {
+  const ctx = {
     price, loanAmount, rate, term, mortgageType, deductionRate,
-    hoaFee, maintenanceMonthly, kostenKoper, appreciationPct,
+    hoaFee, maintenanceMonthly, kostenKoper, appreciationPct, payment,
   };
-
-  fields.resellGrid.innerHTML = '';
 
   // ---- own vs. rent: single box, slider-driven horizon ----
   const ownMonths = parseInt(fields.ownVsRentSlider.value, 10);
@@ -369,58 +403,9 @@ function render() {
   if (price <= 0) {
     fields.ownVsRentBox.innerHTML = '<p class="empty-state">fill in a price above to see this</p>';
   } else {
-    const ownYears = ownMonths / 12;
-    const horizonLabel = formatYM(ownMonths);
-    const amort = amortize(loanAmount, rate, term, mortgageType, ownMonths, price, deductionRate);
-    const principalPaid = loanAmount - amort.balance;
-    const appreciationGain = price * (Math.pow(1 + appreciationPct / 100, ownYears) - 1);
-    const monthlyCost = payment + hoaFee + maintenanceMonthly;
-    const totalMonthlyEMI = payment * ownMonths;
-    const totalMonthlyCost = monthlyCost * ownMonths;
-    const totalCost = kostenKoper + totalMonthlyCost;
-    const rentCost = rent * ownMonths;
-    const totalPayments = principalPaid + amort.cumInterest;
-    const principalPct = totalPayments > 0 ? (principalPaid / totalPayments) * 100 : 0;
-    const interestPct = totalPayments > 0 ? (amort.cumInterest / totalPayments) * 100 : 0;
-    const rebatePct = amort.cumInterest > 0 ? (amort.cumTaxBenefit / amort.cumInterest) * 100 : 0;
-    const netInterestPaid = amort.cumInterest - amort.cumTaxBenefit;
-    const emiPctLabel = `of total monthly EMI for ${horizonLabel}`;
-
     const box = fields.ownVsRentBox;
-    addMilestoneRow(box, 'upfront buying cost', `− ${euro(kostenKoper)}`);
-    addMilestoneRow(box, 'per month EMI', `${euro(payment)} /mo`);
-    addMilestoneRow(box, 'per month cost (EMI + HOA + insurance)', `${euro(monthlyCost)} /mo`);
-    addMilestoneRow(box, `total monthly EMI for ${horizonLabel}`, `− ${euro(totalMonthlyEMI)}`);
-    addMilestoneRow(box, `total monthly cost for ${horizonLabel}`, `− ${euro(totalMonthlyCost)}`);
-
-    const totalCostRow = document.createElement('div');
-    totalCostRow.className = 'milestone-total';
-    totalCostRow.innerHTML = `<span>total cost</span><span class="val">− ${euro(totalCost)}</span>`;
-    box.appendChild(totalCostRow);
-
-    addMilestoneRow(box, 'total principal paid', `+ ${euro(principalPaid)}`, { pct: `${principalPct.toFixed(0)}% ${emiPctLabel}` });
-    addMilestoneRow(box, 'total interest paid', `− ${euro(amort.cumInterest)}`, { pct: `${interestPct.toFixed(0)}% ${emiPctLabel}` });
-    addMilestoneRow(box, 'total tax rebate', `+ ${euro(amort.cumTaxBenefit)}`, { pct: `${rebatePct.toFixed(0)}% of interest recovered` });
-    addMilestoneRow(box, 'net interest paid', `− ${euro(netInterestPaid)}`, { pct: 'total interest − total tax rebate' });
-    addMilestoneRow(box, 'total home value gain', `+ ${euro(appreciationGain)}`, { pct: `${appreciationPct.toFixed(1)}%/yr` });
-
-    const totalAssetMade = principalPaid + appreciationGain;
-    const assetRow = document.createElement('div');
-    assetRow.className = 'milestone-total';
-    assetRow.innerHTML = `<span>total asset made</span><span class="val">${euro(totalAssetMade)}</span>`;
-    box.appendChild(assetRow);
-
-    // What actually left your pocket, net of what came back as equity
-    // (principal), a refund (tax rebate), or a paper gain (appreciation).
-    const pocketOut = totalCost - principalPaid - amort.cumTaxBenefit - appreciationGain;
-    const pocketRow = document.createElement('div');
-    pocketRow.className = 'milestone-total';
-    pocketRow.innerHTML = `<span>money out of pocket (net)</span><span class="val">${pocketOut >= 0 ? '−' : '+'} ${euro(Math.abs(pocketOut))}</span>`;
-    box.appendChild(pocketRow);
-    const pocketNote = document.createElement('div');
-    pocketNote.className = 'milestone-caption';
-    pocketNote.textContent = 'total cost − principal paid − tax rebate − home value gain';
-    box.appendChild(pocketNote);
+    const { pocketOut } = renderOwnershipBreakdown(box, ownMonths, ctx);
+    const rentCost = rent * ownMonths;
 
     addMilestoneRow(box, 'rent paid, same period', rent > 0 ? `− ${euro(rentCost)}` : '—');
 
@@ -435,26 +420,26 @@ function render() {
     box.appendChild(verdict);
   }
 
-  if (price <= 0) {
-    fields.resellGrid.innerHTML = '<p class="empty-state">fill in a price above to see this</p>';
-  } else {
-    [1, 2, 3].forEach((years) => {
-      const g = ownershipGain(years, gainCtx);
-      const salePrice = price * Math.pow(1 + appreciationPct / 100, years);
-      const sellingCosts = salePrice * (sellingCostPct / 100);
-      const profit = g.gain - sellingCosts;
+  // ---- sell after...: single box, its own slider-driven horizon ----
+  const resellMonths = parseInt(fields.resellSlider.value, 10);
+  fields.resellSliderLabel.textContent = formatYM(resellMonths);
+  fields.resellBox.innerHTML = '';
 
-      const card = milestoneCard(`${years} year${years > 1 ? 's' : ''}`);
-      addMilestoneRow(card, 'home value gain', `+ ${euro(g.appreciationGain)}`);
-      addMilestoneRow(card, 'upfront costs', `− ${euro(kostenKoper)}`);
-      addMilestoneRow(card, 'ownership costs', `− ${euro(g.netInterest + g.ongoingCosts)}`);
-      addMilestoneRow(card, 'selling costs', `− ${euro(sellingCosts)}`);
-      const total = document.createElement('div');
-      total.className = 'milestone-total';
-      total.innerHTML = `<span>net ${profit >= 0 ? 'profit' : 'loss'}</span><span class="val">${profit >= 0 ? '+' : '−'} ${euro(Math.abs(profit))}</span>`;
-      card.appendChild(total);
-      fields.resellGrid.appendChild(card);
-    });
+  if (price <= 0) {
+    fields.resellBox.innerHTML = '<p class="empty-state">fill in a price above to see this</p>';
+  } else {
+    const box = fields.resellBox;
+    const { pocketOut } = renderOwnershipBreakdown(box, resellMonths, ctx);
+    const salePrice = price * Math.pow(1 + appreciationPct / 100, resellMonths / 12);
+    const sellingCosts = salePrice * (sellingCostPct / 100);
+
+    addMilestoneRow(box, 'selling costs', `− ${euro(sellingCosts)}`, { pct: `${sellingCostPct.toFixed(1)}% of sale price` });
+
+    const profit = -pocketOut - sellingCosts;
+    const total = document.createElement('div');
+    total.className = 'milestone-total';
+    total.innerHTML = `<span>net ${profit >= 0 ? 'profit' : 'loss'}</span><span class="val">${profit >= 0 ? '+' : '−'} ${euro(Math.abs(profit))}</span>`;
+    box.appendChild(total);
   }
 }
 
