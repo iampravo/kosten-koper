@@ -19,13 +19,13 @@ You enter the property details yourself; the fields are compact enough that copy
 - **What to check before you buy** — a reference checklist: contract contingencies (financing, structural survey, NHG), structural risks (wooden pile foundations, asbestos, old pipework), legal/ownership status (erfpacht, VvE health, monument status, boundaries, age/non-occupancy/asbestos clauses), and financial/admin checks (WOZ value, permits, soil contamination). "Own vs. rent", "sell after...", and this checklist are all collapsible.
 - **Shareable permalink** — every input is encoded into the URL as you type, so the address bar is always a link to your exact scenario. Click "copy link" to grab it — paste it back into the app on any device (or send it to your wife/co-buyer) and every field, toggle, and slider restores exactly.
 - Live NL-formatted number inputs (thousand separators as you type, comma-decimal rates accepted).
-- Bold monochrome "blueprint" design — Fraunces + IBM Plex Mono/Sans, hairline rules, no external requests beyond fonts.
+- Bold monochrome "blueprint" design — Archivo Narrow + IBM Plex Mono, hairline rules, no external requests beyond fonts.
 - Zero build step, zero backend — everything computes client-side, entirely manual entry (Funda blocks server-side scraping, so there's no "paste a link" shortcut here — see git history for the bookmarklet-based approach that was tried and removed).
 
 ## Stack
 
 - Vanilla JS, no framework or bundler, no API calls
-- [Fraunces](https://fonts.google.com/specimen/Fraunces) + [IBM Plex Sans](https://fonts.google.com/specimen/IBM+Plex+Sans) + [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono) via Google Fonts
+- [Archivo Narrow](https://fonts.google.com/specimen/Archivo+Narrow) + [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono) via Google Fonts
 
 ## Running locally
 

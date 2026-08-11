@@ -29,7 +29,7 @@ body {
   min-height: 100vh;
   color: var(--ink);
   background-color: var(--paper);
-  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Archivo Narrow', -apple-system, BlinkMacSystemFont, sans-serif;
   display: flex;
   justify-content: center;
   padding: 26px 14px 36px;
@@ -50,8 +50,8 @@ body {
 }
 
 .header h1 {
-  font-family: 'Fraunces', Georgia, serif;
-  font-weight: 500;
+  font-family: 'Archivo Narrow', sans-serif;
+  font-weight: 600;
   font-size: 30px;
   letter-spacing: -0.01em;
   margin: 0 0 3px;
@@ -235,7 +235,7 @@ input, select {
 }
 
 #address {
-  font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+  font-family: 'Archivo Narrow', -apple-system, sans-serif;
   font-variant-numeric: normal;
 }
 
