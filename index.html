@@ -22,13 +22,27 @@
 
         <section class="card">
           <div class="card-head">
-            <label>property</label>
+            <label>import</label>
             <span class="hint" id="importStatus"></span>
           </div>
 
           <div class="bookmarklet-row">
             <a class="bookmarklet-btn" id="bookmarkletLink" href="#" title="Drag this to your bookmarks bar">＋ import from funda</a>
-            <p class="bookmarklet-help">drag to your bookmarks bar once → click it on any funda listing</p>
+            <p class="bookmarklet-help">drag to your bookmarks bar once → click it on any funda listing. fills in the property section below.</p>
+          </div>
+
+          <div class="from-row">
+            <div class="field field-grow">
+              <label for="fundaLink">funda link</label>
+              <input type="url" id="fundaLink" placeholder="https://www.funda.nl/detail/..." autocomplete="off">
+              <p class="field-hint" id="fundaLinkHint">funda blocks direct fetches — paste is just for reference, use the bookmarklet above to actually pull details</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <label>property</label>
           </div>
 
           <div class="from-row">
@@ -40,7 +54,7 @@
           <div class="from-row from-row-3">
             <div class="field">
               <label for="price">price (€)</label>
-              <input type="text" id="price" inputmode="numeric" placeholder="480000" autocomplete="off">
+              <input type="text" id="price" inputmode="numeric" placeholder="480.000" autocomplete="off">
             </div>
             <div class="field">
               <label for="livingArea">m²</label>
@@ -49,12 +63,6 @@
             <div class="field">
               <label for="hoaFee">VvE (€/mo)</label>
               <input type="text" id="hoaFee" inputmode="numeric" value="0" autocomplete="off">
-            </div>
-          </div>
-          <div class="from-row">
-            <div class="field field-grow">
-              <label for="fundaLink">funda link <span class="label-note">reference only, not fetched</span></label>
-              <input type="url" id="fundaLink" placeholder="https://www.funda.nl/detail/..." autocomplete="off">
             </div>
           </div>
         </section>
@@ -217,7 +225,7 @@
           <div class="from-row">
             <div class="field field-grow">
               <label for="comparableRent">comparable rent (€/mo)</label>
-              <input type="text" id="comparableRent" inputmode="numeric" placeholder="1800" autocomplete="off">
+              <input type="text" id="comparableRent" inputmode="numeric" placeholder="1.800" autocomplete="off">
             </div>
           </div>
           <div class="results" id="breakEvenResults"></div>

@@ -52,9 +52,20 @@ const fields = {
 let buyerCount = 2;
 let mortgageType = 'annuity';
 
-function parseNum(raw) {
+// Whole-euro fields (price, fees, rent): strip every non-digit — works
+// whether someone types "600000", "600.000" (NL thousands), or "600,000".
+function parseInt_(raw) {
   if (raw == null) return 0;
-  const cleaned = String(raw).replace(/[^\d.-]/g, '');
+  const digits = String(raw).replace(/\D/g, '');
+  const value = parseInt(digits, 10);
+  return Number.isFinite(value) ? value : 0;
+}
+
+// Rate/percentage fields: NL uses a comma for decimals ("3,7"), so
+// normalize comma → period before parsing, instead of stripping it.
+function parseRate(raw) {
+  if (raw == null) return 0;
+  const cleaned = String(raw).replace(',', '.').replace(/[^\d.-]/g, '');
   const value = parseFloat(cleaned);
   return Number.isFinite(value) ? value : 0;
 }
@@ -62,6 +73,39 @@ function parseNum(raw) {
 function euro(n) {
   return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 }
+
+// Live-formats a whole-euro input with NL thousand separators as you type,
+// preserving cursor position relative to the digits (not the punctuation).
+function formatEuroValue(digits) {
+  return digits ? Number(digits).toLocaleString('nl-NL') : '';
+}
+
+function attachEuroFormatting(input) {
+  input.addEventListener('input', () => {
+    const prevValue = input.value;
+    const prevCursor = input.selectionStart ?? prevValue.length;
+    const digitsBeforeCursor = prevValue.slice(0, prevCursor).replace(/\D/g, '').length;
+    const digitsOnly = prevValue.replace(/\D/g, '');
+    input.value = formatEuroValue(digitsOnly);
+
+    let seen = 0;
+    let pos = input.value.length;
+    for (let i = 0; i < input.value.length; i++) {
+      if (/\d/.test(input.value[i])) seen++;
+      if (seen === digitsBeforeCursor) {
+        pos = i + 1;
+        break;
+      }
+    }
+    if (digitsBeforeCursor === 0) pos = 0;
+    input.setSelectionRange(pos, pos);
+  });
+}
+
+const EURO_FIELD_IDS = [
+  'price', 'hoaFee', 'downPayment', 'notaryFee', 'valuationFee',
+  'advisorFee', 'surveyFee', 'comparableRent',
+];
 
 function pct(n) {
   return `${n.toFixed(2)}%`;
@@ -83,18 +127,18 @@ function resultRow(label, sub, value) {
 // ---------- buyers ----------
 
 function getBuyers() {
-  const price = parseNum(fields.price.value);
+  const price = parseInt_(fields.price.value);
   const buyers = [
     {
-      age: parseNum(fields.buyer1Age.value),
-      share: parseNum(fields.buyer1Share.value),
+      age: parseInt_(fields.buyer1Age.value),
+      share: parseInt_(fields.buyer1Share.value),
       starter: fields.buyer1Starter.checked,
     },
   ];
   if (buyerCount === 2) {
     buyers.push({
-      age: parseNum(fields.buyer2Age.value),
-      share: parseNum(fields.buyer2Share.value),
+      age: parseInt_(fields.buyer2Age.value),
+      share: parseInt_(fields.buyer2Share.value),
       starter: fields.buyer2Starter.checked,
     });
   }
@@ -127,8 +171,8 @@ function mortgagePayment(loanAmount, annualRatePct, termYears, type) {
 // ---------- render ----------
 
 function render() {
-  const price = parseNum(fields.price.value);
-  const downPayment = parseNum(fields.downPayment.value);
+  const price = parseInt_(fields.price.value);
+  const downPayment = parseInt_(fields.downPayment.value);
   const loanAmount = Math.max(0, price - downPayment);
   fields.loanAmountDisplay.textContent = price > 0 ? euro(loanAmount) : '—';
 
@@ -146,10 +190,10 @@ function render() {
   const transferTaxTotal = buyers.reduce((sum, b) => sum + b.tax, 0);
 
   // ---- upfront costs ----
-  const notary = parseNum(fields.notaryFee.value);
-  const valuation = parseNum(fields.valuationFee.value);
-  const advisor = parseNum(fields.advisorFee.value);
-  const survey = parseNum(fields.surveyFee.value);
+  const notary = parseInt_(fields.notaryFee.value);
+  const valuation = parseInt_(fields.valuationFee.value);
+  const advisor = parseInt_(fields.advisorFee.value);
+  const survey = parseInt_(fields.surveyFee.value);
   const nhgPremium = nhgOn ? loanAmount * NHG_PREMIUM_RATE : 0;
 
   fields.upfrontResults.innerHTML = '';
@@ -167,17 +211,17 @@ function render() {
   fields.totalUpfrontValue.textContent = price > 0 ? euro(totalUpfront) : '—';
 
   // ---- monthly costs ----
-  const rate = parseNum(fields.interestRate.value);
-  const term = parseNum(fields.mortgageTerm.value) || 30;
-  const deductionRate = parseNum(fields.deductionRate.value);
+  const rate = parseRate(fields.interestRate.value);
+  const term = parseInt_(fields.mortgageTerm.value) || 30;
+  const deductionRate = parseRate(fields.deductionRate.value);
   const { payment, interestMonth1 } = mortgagePayment(loanAmount, rate, term, mortgageType);
 
   const ewfMonthly = (price * EIGENWONINGFORFAIT_RATE) / 12;
   const deductibleBase = Math.max(0, interestMonth1 - ewfMonthly);
   const taxBenefit = deductibleBase * (deductionRate / 100);
 
-  const hoaFee = parseNum(fields.hoaFee.value);
-  const maintenancePct = parseNum(fields.maintenancePct.value);
+  const hoaFee = parseInt_(fields.hoaFee.value);
+  const maintenancePct = parseRate(fields.maintenancePct.value);
   const maintenanceMonthly = (price * maintenancePct) / 100 / 12;
 
   const netMonthly = payment - taxBenefit + hoaFee + maintenanceMonthly;
@@ -190,7 +234,7 @@ function render() {
   fields.netMonthlyValue.textContent = price > 0 ? euro(netMonthly) : '—';
 
   // ---- break-even vs renting ----
-  const rent = parseNum(fields.comparableRent.value);
+  const rent = parseInt_(fields.comparableRent.value);
   fields.breakEvenResults.innerHTML = '';
   if (rent <= 0 || price <= 0) {
     fields.breakEvenResults.innerHTML = '<p class="empty-state">enter a comparable rent above 👆</p>';
@@ -234,15 +278,24 @@ function setupBookmarklet() {
   el('bookmarkletLink').href = 'javascript:' + encodeURIComponent(bookmarkletSource(siteUrl));
 }
 
+// Funda's scraped text (e.g. "€242.00 per month") always uses a period as
+// the decimal point regardless of page language, unlike what a person types.
+function parseImportNumber(raw) {
+  if (raw == null) return 0;
+  const cleaned = String(raw).replace(/[^\d.-]/g, '');
+  const value = parseFloat(cleaned);
+  return Number.isFinite(value) ? value : 0;
+}
+
 function applyImport(data) {
   if (data.a) fields.address.value = data.a;
-  if (data.p) fields.price.value = String(data.p);
+  if (data.p) fields.price.value = formatEuroValue(String(Math.round(data.p)));
   if (data.hoa) {
-    const n = parseNum(data.hoa);
-    if (n > 0) fields.hoaFee.value = String(n);
+    const n = Math.round(parseImportNumber(data.hoa));
+    if (n > 0) fields.hoaFee.value = formatEuroValue(String(n));
   }
   if (data.liv) {
-    const n = parseNum(data.liv);
+    const n = Math.round(parseImportNumber(data.liv));
     if (n > 0) fields.livingArea.value = String(n);
   }
   if (data.url) fields.fundaLink.value = data.url;
@@ -266,13 +319,26 @@ function parseImportFromUrl() {
 
 // ---------- wiring ----------
 
+const FUNDA_URL_RE = /^https?:\/\/(www\.)?funda\.nl\//i;
+
 function init() {
   setupBookmarklet();
+
+  EURO_FIELD_IDS.forEach((id) => {
+    const input = el(id);
+    input.value = formatEuroValue(input.value.replace(/\D/g, ''));
+    attachEuroFormatting(input);
+  });
+
   parseImportFromUrl();
 
   const debouncedRender = debounce(render, 80);
   document.querySelectorAll('input').forEach((input) => {
     input.addEventListener('input', debouncedRender);
+  });
+
+  fields.fundaLink.addEventListener('input', () => {
+    el('fundaLinkHint').style.visibility = FUNDA_URL_RE.test(fields.fundaLink.value.trim()) ? 'visible' : 'hidden';
   });
 
   el('buyerCountToggle').querySelectorAll('.toggle-btn').forEach((btn) => {
@@ -283,7 +349,7 @@ function init() {
       el('buyersGrid').classList.toggle('single', buyerCount === 1);
       if (buyerCount === 1) {
         fields.buyer1Share.value = '100';
-      } else if (parseNum(fields.buyer1Share.value) === 100) {
+      } else if (parseInt_(fields.buyer1Share.value) === 100) {
         fields.buyer1Share.value = '50';
         fields.buyer2Share.value = '50';
       }
@@ -301,7 +367,7 @@ function init() {
 
   fields.buyer1Share.addEventListener('input', () => {
     if (buyerCount === 2) {
-      const v = Math.min(100, Math.max(0, parseNum(fields.buyer1Share.value)));
+      const v = Math.min(100, Math.max(0, parseInt_(fields.buyer1Share.value)));
       fields.buyer2Share.value = String(100 - v);
     }
   });
