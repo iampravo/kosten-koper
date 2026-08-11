@@ -405,6 +405,12 @@ function render() {
     addMilestoneRow(box, 'net interest paid', `− ${euro(netInterestPaid)}`, { pct: 'total interest − total tax rebate' });
     addMilestoneRow(box, 'total home value gain', `+ ${euro(appreciationGain)}`, { pct: `${appreciationPct.toFixed(1)}%/yr` });
 
+    const totalAssetMade = principalPaid + appreciationGain;
+    const assetRow = document.createElement('div');
+    assetRow.className = 'milestone-total';
+    assetRow.innerHTML = `<span>total asset made</span><span class="val">${euro(totalAssetMade)}</span>`;
+    box.appendChild(assetRow);
+
     const financingRow = document.createElement('div');
     financingRow.className = 'milestone-total';
     financingRow.innerHTML = `<span>net interest paid − home value gain</span><span class="val">${netFinancingCost >= 0 ? '−' : '+'} ${euro(Math.abs(netFinancingCost))}</span>`;
