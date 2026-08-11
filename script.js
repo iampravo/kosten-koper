@@ -441,6 +441,8 @@ function render() {
     total.innerHTML = `<span>net ${profit >= 0 ? 'profit' : 'loss'}</span><span class="val">${profit >= 0 ? '+' : '−'} ${euro(Math.abs(profit))}</span>`;
     box.appendChild(total);
   }
+
+  updatePermalinkURL();
 }
 
 function debounce(fn, wait) {
@@ -451,9 +453,91 @@ function debounce(fn, wait) {
   };
 }
 
+// ---------- toggle setters (shared by click handlers and permalink restore) ----------
+
+function setConstructionType(type) {
+  constructionType = type;
+  el('constructionToggle').querySelectorAll('.toggle-btn').forEach((b) => b.classList.toggle('selected', b.dataset.type === type));
+}
+
+function setBuyerCount(count) {
+  buyerCount = count;
+  el('buyerCountToggle').querySelectorAll('.toggle-btn').forEach((b) => b.classList.toggle('selected', Number(b.dataset.count) === count));
+  fields.buyer2Block.style.display = count === 2 ? '' : 'none';
+  el('buyersGrid').classList.toggle('single', count === 1);
+}
+
+function setMortgageType(type) {
+  mortgageType = type;
+  el('mortgageTypeToggle').querySelectorAll('.toggle-btn').forEach((b) => b.classList.toggle('selected', b.dataset.type === type));
+}
+
+// ---------- permalink ----------
+
+// Every plain-value field worth restoring from a shared link. Toggle state
+// (buyer count, mortgage type, construction type) isn't a native input
+// value, so it's captured separately alongside these.
+const PERMALINK_TEXT_IDS = [
+  'address', 'price', 'livingArea', 'hoaFee', 'plotSize', 'bedrooms', 'yearBuilt', 'energyLabel',
+  'buyer1Age', 'buyer1Share', 'buyer2Age', 'buyer2Share',
+  'downPayment', 'interestRate', 'mortgageTerm', 'deductionRate',
+  'notaryFee', 'valuationFee', 'advisorFee', 'surveyFee', 'moveInFee', 'renovationFee', 'checksFee',
+  'maintenancePct', 'comparableRent', 'appreciationRate', 'ownVsRentSlider', 'sellingCostPct', 'resellSlider',
+];
+const PERMALINK_CHECKBOX_IDS = ['buyer1Starter', 'buyer2Starter', 'nhgToggle'];
+
+function buildPermalinkState() {
+  const state = {};
+  PERMALINK_TEXT_IDS.forEach((id) => { state[id] = el(id).value; });
+  PERMALINK_CHECKBOX_IDS.forEach((id) => { state[id] = el(id).checked; });
+  state.buyerCount = buyerCount;
+  state.mortgageType = mortgageType;
+  state.constructionType = constructionType;
+  return state;
+}
+
+function encodeState(state) {
+  return btoa(unescape(encodeURIComponent(JSON.stringify(state))))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function decodeState(str) {
+  const b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  return JSON.parse(decodeURIComponent(escape(atob(b64))));
+}
+
+function applyPermalinkState(state) {
+  PERMALINK_TEXT_IDS.forEach((id) => {
+    if (state[id] != null) el(id).value = state[id];
+  });
+  PERMALINK_CHECKBOX_IDS.forEach((id) => {
+    if (state[id] != null) el(id).checked = state[id];
+  });
+  if (state.buyerCount) setBuyerCount(state.buyerCount);
+  if (state.mortgageType) setMortgageType(state.mortgageType);
+  if (state.constructionType) setConstructionType(state.constructionType);
+}
+
+function updatePermalinkURL() {
+  const encoded = encodeState(buildPermalinkState());
+  const url = new URL(location.href);
+  url.searchParams.set('s', encoded);
+  history.replaceState({}, '', url);
+}
+
 // ---------- wiring ----------
 
 function init() {
+  const params = new URLSearchParams(location.search);
+  const shared = params.get('s');
+  if (shared) {
+    try {
+      applyPermalinkState(decodeState(shared));
+    } catch {
+      // malformed/old link — fall back to the defaults already in the HTML
+    }
+  }
+
   EURO_FIELD_IDS.forEach((id) => {
     const input = el(id);
     input.value = formatEuroValue(input.value.replace(/\D/g, ''));
@@ -467,7 +551,7 @@ function init() {
   });
 
   const debouncedRender = debounce(render, 80);
-  document.querySelectorAll('input').forEach((input) => {
+  document.querySelectorAll('input, select').forEach((input) => {
     input.addEventListener('input', debouncedRender);
   });
 
@@ -482,19 +566,16 @@ function init() {
 
   el('constructionToggle').querySelectorAll('.toggle-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
-      constructionType = btn.dataset.type;
-      el('constructionToggle').querySelectorAll('.toggle-btn').forEach((b) => b.classList.toggle('selected', b === btn));
+      setConstructionType(btn.dataset.type);
       render();
     });
   });
 
   el('buyerCountToggle').querySelectorAll('.toggle-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
-      buyerCount = Number(btn.dataset.count);
-      el('buyerCountToggle').querySelectorAll('.toggle-btn').forEach((b) => b.classList.toggle('selected', b === btn));
-      fields.buyer2Block.style.display = buyerCount === 2 ? '' : 'none';
-      el('buyersGrid').classList.toggle('single', buyerCount === 1);
-      if (buyerCount === 1) {
+      const count = Number(btn.dataset.count);
+      setBuyerCount(count);
+      if (count === 1) {
         fields.buyer1Share.value = '100';
       } else if (parseInt_(fields.buyer1Share.value) === 100) {
         fields.buyer1Share.value = '50';
@@ -506,8 +587,7 @@ function init() {
 
   el('mortgageTypeToggle').querySelectorAll('.toggle-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
-      mortgageType = btn.dataset.type;
-      el('mortgageTypeToggle').querySelectorAll('.toggle-btn').forEach((b) => b.classList.toggle('selected', b === btn));
+      setMortgageType(btn.dataset.type);
       render();
     });
   });
@@ -516,6 +596,22 @@ function init() {
     if (buyerCount === 2) {
       const v = Math.min(100, Math.max(0, parseInt_(fields.buyer1Share.value)));
       fields.buyer2Share.value = String(100 - v);
+    }
+  });
+
+  const copyLinkBtn = el('copyLinkBtn');
+  copyLinkBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(location.href);
+      const original = copyLinkBtn.textContent;
+      copyLinkBtn.textContent = '✓ copied';
+      copyLinkBtn.classList.add('copied');
+      setTimeout(() => {
+        copyLinkBtn.textContent = original;
+        copyLinkBtn.classList.remove('copied');
+      }, 1200);
+    } catch {
+      // clipboard API unavailable — nothing to recover
     }
   });
 
