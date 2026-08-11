@@ -280,6 +280,7 @@ function init() {
       buyerCount = Number(btn.dataset.count);
       el('buyerCountToggle').querySelectorAll('.toggle-btn').forEach((b) => b.classList.toggle('selected', b === btn));
       fields.buyer2Block.style.display = buyerCount === 2 ? '' : 'none';
+      el('buyersGrid').classList.toggle('single', buyerCount === 1);
       if (buyerCount === 1) {
         fields.buyer1Share.value = '100';
       } else if (parseNum(fields.buyer1Share.value) === 100) {
