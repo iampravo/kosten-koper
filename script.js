@@ -48,7 +48,9 @@ const fields = {
 
   comparableRent: el('comparableRent'),
   appreciationRate: el('appreciationRate'),
-  ownVsRentGrid: el('ownVsRentGrid'),
+  ownVsRentSlider: el('ownVsRentSlider'),
+  ownVsRentSliderLabel: el('ownVsRentSliderLabel'),
+  ownVsRentBox: el('ownVsRentBox'),
 
   sellingCostPct: el('sellingCostPct'),
   resellGrid: el('resellGrid'),
@@ -231,11 +233,22 @@ function milestoneCard(label) {
   return card;
 }
 
-function addMilestoneRow(card, label, value) {
+function addMilestoneRow(card, label, value, opts) {
+  const { pct, groupStart } = opts || {};
   const row = document.createElement('div');
-  row.className = 'milestone-row';
-  row.innerHTML = `<span>${label}</span><span>${value}</span>`;
+  row.className = 'milestone-row' + (groupStart ? ' group-start' : '');
+  const pctHtml = pct != null ? ` <span class="pct">(${pct})</span>` : '';
+  row.innerHTML = `<span>${label}</span><span>${value}${pctHtml}</span>`;
   card.appendChild(row);
+}
+
+// "3y 6m" / "8m" / "5y" from a raw month count.
+function formatYM(months) {
+  const y = Math.floor(months / 12);
+  const m = months % 12;
+  if (y === 0) return `${m} month${m === 1 ? '' : 's'}`;
+  if (m === 0) return `${y} year${y === 1 ? '' : 's'}`;
+  return `${y}y ${m}m`;
 }
 
 // ---------- render ----------
@@ -325,31 +338,56 @@ function render() {
     hoaFee, maintenanceMonthly, kostenKoper, appreciationPct,
   };
 
-  fields.ownVsRentGrid.innerHTML = '';
   fields.resellGrid.innerHTML = '';
 
+  // ---- own vs. rent: single box, slider-driven horizon ----
+  const ownMonths = parseInt(fields.ownVsRentSlider.value, 10);
+  fields.ownVsRentSliderLabel.textContent = formatYM(ownMonths);
+  fields.ownVsRentBox.innerHTML = '';
+
   if (price <= 0) {
-    fields.ownVsRentGrid.innerHTML = '<p class="empty-state">fill in a price above to see this</p>';
+    fields.ownVsRentBox.innerHTML = '<p class="empty-state">fill in a price above to see this</p>';
+  } else {
+    const ownYears = ownMonths / 12;
+    const amort = amortize(loanAmount, rate, term, mortgageType, ownMonths, price, deductionRate);
+    const principalPaid = loanAmount - amort.balance;
+    const appreciationGain = price * (Math.pow(1 + appreciationPct / 100, ownYears) - 1);
+    const monthlyCost = payment + hoaFee + maintenanceMonthly;
+    const rentCost = rent * ownMonths;
+    const totalPayments = principalPaid + amort.cumInterest;
+    const principalPct = totalPayments > 0 ? (principalPaid / totalPayments) * 100 : 0;
+    const interestPct = totalPayments > 0 ? (amort.cumInterest / totalPayments) * 100 : 0;
+    const rebatePct = amort.cumInterest > 0 ? (amort.cumTaxBenefit / amort.cumInterest) * 100 : 0;
+    const wealthBuilt = principalPaid + appreciationGain;
+
+    const box = fields.ownVsRentBox;
+    addMilestoneRow(box, 'upfront cost', `− ${euro(kostenKoper)}`);
+    addMilestoneRow(box, 'monthly cost (EMI + HOA + insurance)', `${euro(monthlyCost)} /mo`);
+    addMilestoneRow(box, 'tax rebate', `+ ${euro(amort.cumTaxBenefit)}`, { pct: `${rebatePct.toFixed(0)}% of interest recovered`, groupStart: true });
+    addMilestoneRow(box, 'interest paid', `− ${euro(amort.cumInterest)}`, { pct: `${interestPct.toFixed(0)}% of payments` });
+    addMilestoneRow(box, 'principal paid', `+ ${euro(principalPaid)}`, { pct: `${principalPct.toFixed(0)}% of payments` });
+    addMilestoneRow(box, 'home value gain', `+ ${euro(appreciationGain)}`, { pct: `${appreciationPct.toFixed(1)}%/yr` });
+
+    const total = document.createElement('div');
+    total.className = 'milestone-total';
+    total.innerHTML = `<span>principal + appreciation built</span><span class="val">${euro(wealthBuilt)}</span>`;
+    box.appendChild(total);
+    addMilestoneRow(box, 'rent paid, same period', rent > 0 ? `− ${euro(rentCost)}` : '—');
+
+    const verdict = document.createElement('div');
+    verdict.className = 'milestone-verdict';
+    if (rent <= 0) {
+      verdict.textContent = 'enter a comparable rent above to compare';
+    } else {
+      const diff = wealthBuilt - rentCost;
+      verdict.innerHTML = `${diff >= 0 ? 'buying' : 'renting'} ahead by<strong>${euro(Math.abs(diff))}</strong>`;
+    }
+    box.appendChild(verdict);
+  }
+
+  if (price <= 0) {
     fields.resellGrid.innerHTML = '<p class="empty-state">fill in a price above to see this</p>';
   } else {
-    [1, 3, 5].forEach((years) => {
-      const g = ownershipGain(years, gainCtx);
-      const rentCost = rent * years * 12;
-      const card = milestoneCard(`${years} year${years > 1 ? 's' : ''}`);
-      addMilestoneRow(card, 'own', `${g.gain >= 0 ? '+' : '−'} ${euro(Math.abs(g.gain))}`);
-      addMilestoneRow(card, 'rent', rent > 0 ? `− ${euro(rentCost)}` : '—');
-      const verdict = document.createElement('div');
-      verdict.className = 'milestone-verdict';
-      if (rent <= 0) {
-        verdict.textContent = 'enter a comparable rent above to compare';
-      } else {
-        const diff = g.gain + rentCost;
-        verdict.innerHTML = `${diff >= 0 ? 'buying' : 'renting'} wins by<strong>${euro(Math.abs(diff))}</strong>`;
-      }
-      card.appendChild(verdict);
-      fields.ownVsRentGrid.appendChild(card);
-    });
-
     [1, 2, 3].forEach((years) => {
       const g = ownershipGain(years, gainCtx);
       const salePrice = price * Math.pow(1 + appreciationPct / 100, years);

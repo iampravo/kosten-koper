@@ -268,7 +268,14 @@
           <input type="text" id="appreciationRate" inputmode="decimal" value="3" autocomplete="off">
         </div>
       </div>
-      <div class="milestone-grid" id="ownVsRentGrid"></div>
+
+      <div class="slider-row">
+        <label for="ownVsRentSlider">time horizon</label>
+        <span class="slider-value" id="ownVsRentSliderLabel">3 years</span>
+        <input type="range" id="ownVsRentSlider" min="1" max="360" value="36" step="1">
+      </div>
+
+      <div class="own-rent-box" id="ownVsRentBox"></div>
     </section>
 
     <section class="card card-wide">
