@@ -32,7 +32,7 @@ body {
   font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   display: flex;
   justify-content: center;
-  padding: 40px 16px 56px;
+  padding: 26px 14px 36px;
 }
 
 .page {
@@ -41,15 +41,15 @@ body {
 }
 
 .header {
-  margin-bottom: 22px;
+  margin-bottom: 14px;
 }
 
 .header h1 {
   font-family: 'Fraunces', Georgia, serif;
   font-weight: 500;
-  font-size: 34px;
+  font-size: 30px;
   letter-spacing: -0.01em;
-  margin: 0 0 4px;
+  margin: 0 0 3px;
 }
 
 .subtitle {
@@ -67,7 +67,7 @@ body {
 .dashboard {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0 20px;
+  gap: 0 14px;
   align-items: start;
 }
 
@@ -81,20 +81,20 @@ body {
   background: var(--paper);
   border: 1px solid var(--border);
   border-radius: 3px;
-  padding: 18px 20px;
-  margin-bottom: 16px;
+  padding: 13px 15px;
+  margin-bottom: 12px;
 }
 
-.card-wide { padding: 20px 24px; }
+.card-wide { padding: 14px 18px; }
 
 .card-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 9px;
   flex-wrap: wrap;
   gap: 6px;
-  padding-bottom: 10px;
+  padding-bottom: 7px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -118,8 +118,8 @@ body {
 .from-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 7px;
+  margin-bottom: 7px;
 }
 
 .from-row-3 { grid-template-columns: repeat(3, 1fr); }
@@ -134,12 +134,12 @@ body {
 .field label {
   display: block;
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
 }
 
 .label-note {
@@ -150,21 +150,21 @@ body {
 }
 
 .field-hint {
-  margin: -2px 0 10px;
-  font-size: 11.5px;
+  margin: -1px 0 7px;
+  font-size: 11px;
   color: var(--muted);
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
 input, select {
   width: 100%;
   min-width: 0;
-  padding: 9px 10px;
+  padding: 6px 8px;
   border-radius: 2px;
   border: 1px solid var(--border-strong);
   background: var(--paper);
   color: var(--ink);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
@@ -181,13 +181,13 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
 }
 
 .static-value {
-  padding: 9px 10px;
+  padding: 6px 8px;
   border-radius: 2px;
   border: 1px dashed var(--border);
   background: var(--paper-alt);
   color: var(--ink);
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -198,22 +198,22 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
 .checkbox-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .checkbox-row input {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
   accent-color: var(--ink);
 }
 
 .checkbox-row span {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--muted);
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
 /* ---------- toggle ---------- */
@@ -230,9 +230,9 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
   border: none;
   background: var(--paper);
   color: var(--ink);
-  padding: 8px 10px;
+  padding: 6px 8px;
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -248,7 +248,7 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
 .buyers-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0 18px;
+  gap: 0 14px;
 }
 
 .buyers-grid.single { grid-template-columns: 1fr; }
@@ -256,26 +256,26 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
 .buyer-block { min-width: 0; }
 
 .buyers-grid:not(.single) .buyer-block + .buyer-block {
-  padding-left: 18px;
+  padding-left: 14px;
   border-left: 1px solid var(--border);
 }
 
 .buyer-label {
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .section-divider {
-  margin: 16px 0 12px;
-  padding-top: 14px;
+  margin: 12px 0 8px;
+  padding-top: 10px;
   border-top: 1px solid var(--border);
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
@@ -294,8 +294,8 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 9px 2px;
+  gap: 8px;
+  padding: 6px 2px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -334,18 +334,18 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
 }
 
 .total-row {
-  margin-top: 10px;
-  padding: 12px 14px;
+  margin-top: 7px;
+  padding: 8px 10px;
   border: 1px solid var(--border-strong);
   background: var(--paper-alt);
   border-radius: 2px;
 }
 
 .total-row .result-value {
-  font-size: 18px;
+  font-size: 16.5px;
 }
 
-.costs-row { margin-top: 12px; }
+.costs-row { margin-top: 8px; }
 
 .empty-state {
   color: var(--muted);
@@ -358,33 +358,33 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
 .milestone-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-top: 16px;
+  gap: 10px;
+  margin-top: 11px;
 }
 
 .milestone {
   border: 1px solid var(--border);
   border-radius: 2px;
-  padding: 14px 16px;
+  padding: 10px 12px;
   min-width: 0;
 }
 
 .milestone-label {
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-bottom: 10px;
+  margin-bottom: 7px;
 }
 
 .milestone-row {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  font-size: 13px;
-  padding: 5px 0;
+  font-size: 12.5px;
+  padding: 4px 0;
   border-bottom: 1px dotted var(--border);
 }
 
@@ -396,17 +396,17 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
 }
 
 .milestone-verdict {
-  margin-top: 10px;
-  padding-top: 10px;
+  margin-top: 7px;
+  padding-top: 7px;
   border-top: 1px solid var(--border-strong);
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 12.5px;
+  line-height: 1.35;
 }
 
 .milestone-verdict strong {
   display: block;
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
-  font-size: 17px;
+  font-size: 16px;
   margin-top: 2px;
   font-variant-numeric: tabular-nums;
 }
@@ -416,16 +416,16 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
   justify-content: space-between;
   align-items: baseline;
   gap: 8px;
-  margin-top: 10px;
-  padding-top: 10px;
+  margin-top: 7px;
+  padding-top: 7px;
   border-top: 1px solid var(--border-strong);
-  font-size: 13px;
+  font-size: 12.5px;
 }
 
 .milestone-total .val {
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-weight: 700;
-  font-size: 17px;
+  font-size: 16px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -439,18 +439,18 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
 .checklist-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 22px 28px;
+  gap: 15px 20px;
 }
 
 .checklist-group-label {
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-bottom: 10px;
-  padding-bottom: 8px;
+  margin-bottom: 7px;
+  padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -458,21 +458,21 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 7px 0;
+  padding: 5px 0;
   border-bottom: 1px dotted var(--border);
 }
 
 .checklist-item:last-child { border-bottom: none; }
 
 .checklist-term {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
 }
 
 .checklist-desc {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--muted);
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
 .checklist-desc em { font-style: italic; }
@@ -485,11 +485,11 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
 
 .disclaimer {
   text-align: center;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 400;
   color: var(--muted);
-  margin-top: 20px;
-  line-height: 1.6;
+  margin-top: 14px;
+  line-height: 1.55;
   padding: 0 8px;
   max-width: 640px;
   margin-left: auto;
@@ -499,7 +499,7 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
 .signature {
   display: block;
   text-align: center;
-  margin-top: 16px;
+  margin-top: 10px;
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-size: 12px;
   font-weight: 600;
@@ -522,11 +522,11 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
   .buyers-grid:not(.single) .buyer-block + .buyer-block {
     padding-left: 0;
     border-left: none;
-    padding-top: 14px;
-    margin-top: 14px;
+    padding-top: 10px;
+    margin-top: 10px;
     border-top: 1px solid var(--border);
   }
-  .card { padding: 16px; }
-  .header h1 { font-size: 28px; }
-  .total-row .result-value { font-size: 16px; }
+  .card { padding: 12px; }
+  .header h1 { font-size: 25px; }
+  .total-row .result-value { font-size: 15px; }
 }
