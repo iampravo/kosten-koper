@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kosten koper</title>
+<meta name="description" content="Import a Funda listing and see the real monthly cost of buying it in the Netherlands — transfer tax, NHG, mortgage interest deduction, and rent-vs-buy break-even.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <h1>kosten koper</h1>
+      <p class="subtitle">what a listing actually costs, monthly</p>
+    </header>
+
+    <section class="card">
+      <div class="card-head">
+        <label>property</label>
+        <span class="hint" id="importStatus"></span>
+      </div>
+
+      <div class="bookmarklet-row">
+        <a class="bookmarklet-btn" id="bookmarkletLink" href="#" title="Drag this to your bookmarks bar">＋ import from funda</a>
+        <p class="bookmarklet-help">drag the button to your bookmarks bar once. open a funda listing, click it there.</p>
+      </div>
+
+      <div class="from-row">
+        <div class="field field-grow">
+          <label for="address">address</label>
+          <input type="text" id="address" placeholder="Ladogameerhof 87, Amsterdam" autocomplete="off">
+        </div>
+      </div>
+      <div class="from-row">
+        <div class="field">
+          <label for="price">price (v.o.n. / k.k.)</label>
+          <input type="text" id="price" inputmode="numeric" placeholder="480000" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="livingArea">living area (m²)</label>
+          <input type="text" id="livingArea" inputmode="numeric" placeholder="107" autocomplete="off">
+        </div>
+      </div>
+      <div class="from-row">
+        <div class="field">
+          <label for="hoaFee">VvE / HOA (€/mo)</label>
+          <input type="text" id="hoaFee" inputmode="numeric" value="0" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="fundaLink">funda link</label>
+          <input type="url" id="fundaLink" placeholder="https://www.funda.nl/detail/..." autocomplete="off">
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <label>buyers</label>
+        <div class="toggle-pair" id="buyerCountToggle">
+          <button type="button" class="toggle-btn" data-count="1">1</button>
+          <button type="button" class="toggle-btn selected" data-count="2">2</button>
+        </div>
+      </div>
+
+      <div class="buyer-block">
+        <div class="buyer-label">buyer 1</div>
+        <div class="from-row">
+          <div class="field">
+            <label for="buyer1Age">age</label>
+            <input type="text" id="buyer1Age" inputmode="numeric" value="36" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="buyer1Share">ownership share (%)</label>
+            <input type="text" id="buyer1Share" inputmode="numeric" value="50" autocomplete="off">
+          </div>
+        </div>
+        <label class="checkbox-row">
+          <input type="checkbox" id="buyer1Starter" checked>
+          <span>first home / never used starter exemption</span>
+        </label>
+      </div>
+
+      <div class="buyer-block" id="buyer2Block">
+        <div class="buyer-label">buyer 2</div>
+        <div class="from-row">
+          <div class="field">
+            <label for="buyer2Age">age</label>
+            <input type="text" id="buyer2Age" inputmode="numeric" value="32" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="buyer2Share">ownership share (%)</label>
+            <input type="text" id="buyer2Share" inputmode="numeric" value="50" autocomplete="off">
+          </div>
+        </div>
+        <label class="checkbox-row">
+          <input type="checkbox" id="buyer2Starter" checked>
+          <span>first home / never used starter exemption</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <label>financing</label>
+      </div>
+      <div class="from-row">
+        <div class="field">
+          <label for="downPayment">down payment (€)</label>
+          <input type="text" id="downPayment" inputmode="numeric" value="0" autocomplete="off">
+        </div>
+        <div class="field">
+          <label>loan amount</label>
+          <div class="static-value" id="loanAmountDisplay">—</div>
+        </div>
+      </div>
+      <div class="from-row">
+        <div class="field">
+          <label for="interestRate">interest rate (%)</label>
+          <input type="text" id="interestRate" inputmode="decimal" value="3.7" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="mortgageTerm">term (years)</label>
+          <input type="text" id="mortgageTerm" inputmode="numeric" value="30" autocomplete="off">
+        </div>
+      </div>
+      <div class="from-row">
+        <div class="field">
+          <label>mortgage type</label>
+          <div class="toggle-pair" id="mortgageTypeToggle">
+            <button type="button" class="toggle-btn selected" data-type="annuity">annuity</button>
+            <button type="button" class="toggle-btn" data-type="linear">linear</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="deductionRate">tax deduction rate (%)</label>
+          <input type="text" id="deductionRate" inputmode="decimal" value="37.56" autocomplete="off">
+        </div>
+      </div>
+      <label class="checkbox-row">
+        <input type="checkbox" id="nhgToggle" checked>
+        <span id="nhgLabel">use NHG (National Mortgage Guarantee) — 0.4% one-time premium, lower rate</span>
+      </label>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <label>upfront — kosten koper</label>
+      </div>
+      <div class="results" id="upfrontResults"></div>
+      <div class="from-row costs-row">
+        <div class="field">
+          <label for="notaryFee">notary (€)</label>
+          <input type="text" id="notaryFee" inputmode="numeric" value="1200" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="valuationFee">valuation / taxatie (€)</label>
+          <input type="text" id="valuationFee" inputmode="numeric" value="650" autocomplete="off">
+        </div>
+      </div>
+      <div class="from-row costs-row">
+        <div class="field">
+          <label for="advisorFee">mortgage advice (€)</label>
+          <input type="text" id="advisorFee" inputmode="numeric" value="2800" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="surveyFee">structural survey (€, 0 = skip)</label>
+          <input type="text" id="surveyFee" inputmode="numeric" value="0" autocomplete="off">
+        </div>
+      </div>
+      <div class="result-row total-row" id="totalUpfrontRow">
+        <div class="result-label">
+          <span class="result-code">cash needed upfront</span>
+          <span class="result-name">down payment + kosten koper</span>
+        </div>
+        <div class="result-right">
+          <span class="result-value" id="totalUpfrontValue">—</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <label>monthly — net of tax benefit</label>
+      </div>
+      <div class="from-row costs-row">
+        <div class="field">
+          <label for="maintenancePct">insurance &amp; maintenance (%/yr of price)</label>
+          <input type="text" id="maintenancePct" inputmode="decimal" value="0.5" autocomplete="off">
+        </div>
+      </div>
+      <div class="results" id="monthlyResults"></div>
+      <div class="result-row total-row" id="netMonthlyRow">
+        <div class="result-label">
+          <span class="result-code">net monthly cost</span>
+          <span class="result-name">year 1 estimate</span>
+        </div>
+        <div class="result-right">
+          <span class="result-value" id="netMonthlyValue">—</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <label>break-even vs. renting</label>
+      </div>
+      <div class="from-row">
+        <div class="field field-grow">
+          <label for="comparableRent">comparable rent (€/mo)</label>
+          <input type="text" id="comparableRent" inputmode="numeric" placeholder="1800" autocomplete="off">
+        </div>
+      </div>
+      <div class="results" id="breakEvenResults"></div>
+    </section>
+
+    <p class="disclaimer">figures use 2026 NL defaults (0%/2% overdrachtsbelasting, NHG grens €470.000, hypotheekrenteaftrek 37,56%) and are simplified year-1 estimates, not advice — all fields are editable. everything computes in your browser, nothing is sent anywhere.</p>
+
+    <a href="https://iampravo.vercel.app/" target="_blank" rel="noopener" class="signature">✦ crafted by iampravo</a>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
