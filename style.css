@@ -85,6 +85,8 @@ body {
   margin-bottom: 16px;
 }
 
+.card-wide { padding: 20px 24px; }
+
 .card-head {
   display: flex;
   align-items: baseline;
@@ -349,6 +351,134 @@ input:focus, select:focus, button:focus-visible, a:focus-visible {
   color: var(--muted);
   font-size: 13px;
   padding: 8px 2px;
+}
+
+/* ---------- milestones (own-vs-rent / resell) ---------- */
+
+.milestone-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.milestone {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 14px 16px;
+  min-width: 0;
+}
+
+.milestone-label {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+
+.milestone-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  padding: 5px 0;
+  border-bottom: 1px dotted var(--border);
+}
+
+.milestone-row span:last-child {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.milestone-verdict {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-strong);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.milestone-verdict strong {
+  display: block;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 17px;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.milestone-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-strong);
+  font-size: 13px;
+}
+
+.milestone-total .val {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-weight: 700;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .milestone-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------- checklist ---------- */
+
+.checklist-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px 28px;
+}
+
+.checklist-group-label {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.checklist-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 0;
+  border-bottom: 1px dotted var(--border);
+}
+
+.checklist-item:last-child { border-bottom: none; }
+
+.checklist-term {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.checklist-desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.checklist-desc em { font-style: italic; }
+
+@media (max-width: 640px) {
+  .checklist-grid { grid-template-columns: 1fr; }
 }
 
 /* ---------- disclaimer / footer ---------- */

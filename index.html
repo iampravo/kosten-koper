@@ -250,23 +250,117 @@
           </div>
         </section>
 
-        <section class="card">
-          <div class="card-head">
-            <label>break-even vs. renting</label>
-          </div>
-          <div class="from-row">
-            <div class="field field-grow">
-              <label for="comparableRent">comparable rent (€/mo)</label>
-              <input type="text" id="comparableRent" inputmode="numeric" placeholder="1.800" autocomplete="off">
-            </div>
-          </div>
-          <div class="results" id="breakEvenResults"></div>
-        </section>
-
       </div>
     </div>
 
-    <p class="disclaimer">figures use 2026 NL defaults (0%/2% overdrachtsbelasting, NHG grens €470.000, hypotheekrenteaftrek 37,56%) and are simplified year-1 estimates, not advice — all fields are editable. everything computes in your browser, nothing is sent anywhere.</p>
+    <section class="card card-wide">
+      <div class="card-head">
+        <label>own vs. rent</label>
+        <span class="hint">assumes the home value grows at the rate below</span>
+      </div>
+      <div class="from-row">
+        <div class="field">
+          <label for="comparableRent">comparable rent (€/mo)</label>
+          <input type="text" id="comparableRent" inputmode="numeric" placeholder="1.800" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="appreciationRate">home value growth (%/yr)</label>
+          <input type="text" id="appreciationRate" inputmode="decimal" value="3" autocomplete="off">
+        </div>
+      </div>
+      <div class="milestone-grid" id="ownVsRentGrid"></div>
+    </section>
+
+    <section class="card card-wide">
+      <div class="card-head">
+        <label>sell after...</label>
+        <span class="hint">same home-value growth assumption as above</span>
+      </div>
+      <div class="from-row">
+        <div class="field field-grow">
+          <label for="sellingCostPct">selling costs — agent commission (%, incl. btw)</label>
+          <input type="text" id="sellingCostPct" inputmode="decimal" value="1.3" autocomplete="off">
+        </div>
+      </div>
+      <div class="milestone-grid" id="resellGrid"></div>
+    </section>
+
+    <section class="card card-wide">
+      <div class="card-head">
+        <label>what to check before you buy</label>
+      </div>
+      <div class="checklist-grid">
+        <div class="checklist-group">
+          <div class="checklist-group-label">contract clauses to insist on</div>
+          <div class="checklist-item">
+            <span class="checklist-term">financing contingency</span>
+            <span class="checklist-desc"><em>voorbehoud financiering</em> — walk away free if your mortgage falls through, typically a 6-week window</span>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-term">survey contingency</span>
+            <span class="checklist-desc"><em>voorbehoud bouwkundige keuring</em> — near-essential on anything built before ~1990</span>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-term">NHG contingency</span>
+            <span class="checklist-desc">if financing with NHG, make the offer conditional on NHG approval too</span>
+          </div>
+        </div>
+
+        <div class="checklist-group">
+          <div class="checklist-group-label">structural risks</div>
+          <div class="checklist-item">
+            <span class="checklist-term">wooden pile foundation</span>
+            <span class="checklist-desc">~750,000 NL homes built before 1970 have one — higher risk in peat/clay soil (Amsterdam, Rotterdam, Utrecht, Gouda, Zaanstreek)</span>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-term">asbestos</span>
+            <span class="checklist-desc">common in anything built or renovated before 1994</span>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-term">roof, insulation, pipework</span>
+            <span class="checklist-desc">lead water pipes turn up in pre-1960s homes; check roof age and isolation on the survey</span>
+          </div>
+        </div>
+
+        <div class="checklist-group">
+          <div class="checklist-group-label">legal &amp; ownership status</div>
+          <div class="checklist-item">
+            <span class="checklist-term">erfpacht (leasehold)</span>
+            <span class="checklist-desc">check the canon amount, whether it's fixed/perpetual (<em>eeuwigdurend afgekocht</em>) or resets, and the end date — this alone can swing monthly cost a lot</span>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-term">VvE health (apartments)</span>
+            <span class="checklist-desc">reserve fund size vs. the maintenance plan (MJOP), and recent meeting minutes for disputes or upcoming special assessments</span>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-term">monument status</span>
+            <span class="checklist-desc">restricts renovations and can require permits even for small changes</span>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-term">boundaries &amp; easements</span>
+            <span class="checklist-desc"><em>erfdienstbaarheid</em> / <em>erfgrens</em> — confirm what's actually yours and who has rights of way</span>
+          </div>
+        </div>
+
+        <div class="checklist-group">
+          <div class="checklist-group-label">financial &amp; admin</div>
+          <div class="checklist-item">
+            <span class="checklist-term">WOZ value vs. asking price</span>
+            <span class="checklist-desc">a big gap either way is worth asking about — it also drives your eigenwoningforfait</span>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-term">permits for past work</span>
+            <span class="checklist-desc"><em>vergunningen</em> for any extension or major renovation — unpermitted work complicates insurance, resale, and financing</span>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-term">soil contamination</span>
+            <span class="checklist-desc"><em>bodemverontreiniging</em> — worth checking near former industrial sites or if there was ever an underground oil tank</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <p class="disclaimer">figures use 2026 NL defaults (0%/2% overdrachtsbelasting, NHG grens €470.000, hypotheekrenteaftrek 37,56%) and are simplified estimates, not advice — the own-vs-rent and resale numbers assume a constant appreciation rate, which is never guaranteed. all fields are editable. everything computes in your browser, nothing is sent anywhere.</p>
 
     <a href="https://iampravo.vercel.app/" target="_blank" rel="noopener" class="signature">✦ crafted by iampravo</a>
   </main>

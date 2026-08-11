@@ -14,7 +14,9 @@ You enter the property details yourself; the fields are compact enough that copy
 - **NHG-aware** — flags eligibility against the €470,000 cap, adds the 0.4% one-time premium when used.
 - **Mortgage interest deduction, net of eigenwoningforfait** — annuity or linear, year-1 estimate, at your marginal rate (default 37.56%, the 2026 cap).
 - **Full kosten koper breakdown** — notary, valuation, mortgage advice, structural survey, plus optional move-in, renovation, and extra-checks (foundation/asbestos/electrical) budgets — all editable, down to one "cash needed upfront" number.
-- **Rent vs. buy break-even** — enter a comparable rent, see the month buying overtakes it once upfront costs are paid off.
+- **Own vs. rent, at 1/3/5 years** — models real net worth, not just monthly cash flow: home value growth (editable assumption, default 3%/yr) minus every real cost — upfront fees, interest net of its tax benefit, HOA/maintenance — compared against what renting would have cost over the same stretch. Principal repayment is excluded on purpose; it converts cash into equity, it isn't a cost.
+- **Sell after 1/2/3 years** — the same ownership math, minus agent commission on the way out, broken into home value gain / upfront costs / ownership costs / selling costs so a loss on an early sale (very common — transaction costs are front-loaded) is easy to see *why*.
+- **What to check before you buy** — a reference checklist: contract contingencies (financing, structural survey, NHG), structural risks (wooden pile foundations, asbestos, old pipework), legal/ownership status (erfpacht, VvE health, monument status, boundaries), and financial/admin checks (WOZ value, permits, soil contamination).
 - Live NL-formatted number inputs (thousand separators as you type, comma-decimal rates accepted).
 - Bold monochrome "ledger" design — Fraunces + IBM Plex Mono/Sans, hairline rules, no external requests beyond fonts.
 - Zero build step, zero backend — everything computes client-side, entirely manual entry (Funda blocks server-side scraping, so there's no "paste a link" shortcut here — see git history for the bookmarklet-based approach that was tried and removed).

@@ -47,7 +47,11 @@ const fields = {
   netMonthlyValue: el('netMonthlyValue'),
 
   comparableRent: el('comparableRent'),
-  breakEvenResults: el('breakEvenResults'),
+  appreciationRate: el('appreciationRate'),
+  ownVsRentGrid: el('ownVsRentGrid'),
+
+  sellingCostPct: el('sellingCostPct'),
+  resellGrid: el('resellGrid'),
 };
 
 let buyerCount = 2;
@@ -175,6 +179,65 @@ function mortgagePayment(loanAmount, annualRatePct, termYears, type) {
   return { payment, interestMonth1, principalMonth1: payment - interestMonth1 };
 }
 
+// Walks the amortization schedule month by month (capped at the loan's own
+// term) and sums interest paid and the tax benefit it generated — needed
+// because both shrink over time for an annuity, so month-1 figures alone
+// would overstate a multi-year total.
+function amortize(loanAmount, annualRatePct, termYears, type, months, price, deductionRatePct) {
+  const r = annualRatePct / 100 / 12;
+  const n = termYears * 12;
+  const m = Math.max(0, Math.min(months, n));
+  const linearPrincipal = n > 0 ? loanAmount / n : 0;
+  const annuityPayment = n <= 0 ? 0 : mortgagePayment(loanAmount, annualRatePct, termYears, 'annuity').payment;
+  const ewfMonthly = (price * EIGENWONINGFORFAIT_RATE) / 12;
+
+  let balance = loanAmount;
+  let cumInterest = 0;
+  let cumTaxBenefit = 0;
+  for (let i = 0; i < m; i++) {
+    const interest = balance * r;
+    const principal = Math.min(type === 'linear' ? linearPrincipal : annuityPayment - interest, balance);
+    balance -= principal;
+    cumInterest += interest;
+    cumTaxBenefit += Math.max(0, interest - ewfMonthly) * (deductionRatePct / 100);
+  }
+  return { balance, cumInterest, cumTaxBenefit };
+}
+
+// The net financial result of owning for `years`, vs. having done nothing
+// with the money: home value change, minus every real cost (upfront fees,
+// interest net of its tax benefit, HOA/maintenance). Principal repayment is
+// deliberately excluded — it converts cash into equity, it isn't a cost.
+function ownershipGain(years, ctx) {
+  const months = years * 12;
+  const { cumInterest, cumTaxBenefit } = amortize(
+    ctx.loanAmount, ctx.rate, ctx.term, ctx.mortgageType, months, ctx.price, ctx.deductionRate
+  );
+  const appreciationGain = ctx.price * (Math.pow(1 + ctx.appreciationPct / 100, years) - 1);
+  const ongoingCosts = months * (ctx.hoaFee + ctx.maintenanceMonthly);
+  const netInterest = cumInterest - cumTaxBenefit;
+  return {
+    appreciationGain,
+    ongoingCosts,
+    netInterest,
+    gain: appreciationGain - ctx.kostenKoper - netInterest - ongoingCosts,
+  };
+}
+
+function milestoneCard(label) {
+  const card = document.createElement('div');
+  card.className = 'milestone';
+  card.innerHTML = `<div class="milestone-label">${label}</div>`;
+  return card;
+}
+
+function addMilestoneRow(card, label, value) {
+  const row = document.createElement('div');
+  row.className = 'milestone-row';
+  row.innerHTML = `<span>${label}</span><span>${value}</span>`;
+  card.appendChild(row);
+}
+
 // ---------- render ----------
 
 function render() {
@@ -252,26 +315,58 @@ function render() {
   fields.monthlyResults.appendChild(resultRow('insurance & maintenance', `${maintenancePct}%/yr of price`, euro(maintenanceMonthly)));
   fields.netMonthlyValue.textContent = price > 0 ? euro(netMonthly) : '—';
 
-  // ---- break-even vs renting ----
+  // ---- own vs. rent, and resell scenarios ----
   const rent = parseInt_(fields.comparableRent.value);
-  fields.breakEvenResults.innerHTML = '';
-  if (rent <= 0 || price <= 0) {
-    fields.breakEvenResults.innerHTML = '<p class="empty-state">enter a comparable rent above 👆</p>';
-  } else if (rent <= netMonthly) {
-    fields.breakEvenResults.appendChild(
-      resultRow('never', 'buying costs more per month than this rent, before counting upfront costs', '—')
-    );
+  const appreciationPct = parseRate(fields.appreciationRate.value);
+  const sellingCostPct = parseRate(fields.sellingCostPct.value);
+
+  const gainCtx = {
+    price, loanAmount, rate, term, mortgageType, deductionRate,
+    hoaFee, maintenanceMonthly, kostenKoper, appreciationPct,
+  };
+
+  fields.ownVsRentGrid.innerHTML = '';
+  fields.resellGrid.innerHTML = '';
+
+  if (price <= 0) {
+    fields.ownVsRentGrid.innerHTML = '<p class="empty-state">fill in a price above to see this</p>';
+    fields.resellGrid.innerHTML = '<p class="empty-state">fill in a price above to see this</p>';
   } else {
-    const months = Math.ceil(kostenKoper / (rent - netMonthly));
-    const years = Math.floor(months / 12);
-    const remMonths = months % 12;
-    const whenText = years > 0 ? `${years}y ${remMonths}m` : `${remMonths}m`;
-    fields.breakEvenResults.appendChild(
-      resultRow('break-even', `buying beats renting after ${whenText} (${months} months)`, whenText)
-    );
-    fields.breakEvenResults.appendChild(
-      resultRow('monthly gap', 'renting minus net buying cost', euro(rent - netMonthly))
-    );
+    [1, 3, 5].forEach((years) => {
+      const g = ownershipGain(years, gainCtx);
+      const rentCost = rent * years * 12;
+      const card = milestoneCard(`${years} year${years > 1 ? 's' : ''}`);
+      addMilestoneRow(card, 'own', `${g.gain >= 0 ? '+' : '−'} ${euro(Math.abs(g.gain))}`);
+      addMilestoneRow(card, 'rent', rent > 0 ? `− ${euro(rentCost)}` : '—');
+      const verdict = document.createElement('div');
+      verdict.className = 'milestone-verdict';
+      if (rent <= 0) {
+        verdict.textContent = 'enter a comparable rent above to compare';
+      } else {
+        const diff = g.gain + rentCost;
+        verdict.innerHTML = `${diff >= 0 ? 'buying' : 'renting'} wins by<strong>${euro(Math.abs(diff))}</strong>`;
+      }
+      card.appendChild(verdict);
+      fields.ownVsRentGrid.appendChild(card);
+    });
+
+    [1, 2, 3].forEach((years) => {
+      const g = ownershipGain(years, gainCtx);
+      const salePrice = price * Math.pow(1 + appreciationPct / 100, years);
+      const sellingCosts = salePrice * (sellingCostPct / 100);
+      const profit = g.gain - sellingCosts;
+
+      const card = milestoneCard(`${years} year${years > 1 ? 's' : ''}`);
+      addMilestoneRow(card, 'home value gain', `+ ${euro(g.appreciationGain)}`);
+      addMilestoneRow(card, 'upfront costs', `− ${euro(kostenKoper)}`);
+      addMilestoneRow(card, 'ownership costs', `− ${euro(g.netInterest + g.ongoingCosts)}`);
+      addMilestoneRow(card, 'selling costs', `− ${euro(sellingCosts)}`);
+      const total = document.createElement('div');
+      total.className = 'milestone-total';
+      total.innerHTML = `<span>net ${profit >= 0 ? 'profit' : 'loss'}</span><span class="val">${profit >= 0 ? '+' : '−'} ${euro(Math.abs(profit))}</span>`;
+      card.appendChild(total);
+      fields.resellGrid.appendChild(card);
+    });
   }
 }
 
