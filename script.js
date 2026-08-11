@@ -375,6 +375,7 @@ function render() {
     const principalPaid = loanAmount - amort.balance;
     const appreciationGain = price * (Math.pow(1 + appreciationPct / 100, ownYears) - 1);
     const monthlyCost = payment + hoaFee + maintenanceMonthly;
+    const totalMonthlyEMI = payment * ownMonths;
     const totalMonthlyCost = monthlyCost * ownMonths;
     const totalCost = kostenKoper + totalMonthlyCost;
     const rentCost = rent * ownMonths;
@@ -384,10 +385,13 @@ function render() {
     const rebatePct = amort.cumInterest > 0 ? (amort.cumTaxBenefit / amort.cumInterest) * 100 : 0;
     const netInterestPaid = amort.cumInterest - amort.cumTaxBenefit;
     const netFinancingCost = netInterestPaid - appreciationGain;
+    const emiPctLabel = `of total monthly EMI for ${horizonLabel}`;
 
     const box = fields.ownVsRentBox;
     addMilestoneRow(box, 'upfront buying cost', `− ${euro(kostenKoper)}`);
+    addMilestoneRow(box, 'per month EMI', `${euro(payment)} /mo`);
     addMilestoneRow(box, 'per month cost (EMI + HOA + insurance)', `${euro(monthlyCost)} /mo`);
+    addMilestoneRow(box, `total monthly EMI for ${horizonLabel}`, `− ${euro(totalMonthlyEMI)}`);
     addMilestoneRow(box, `total monthly cost for ${horizonLabel}`, `− ${euro(totalMonthlyCost)}`);
 
     const totalCostRow = document.createElement('div');
@@ -395,8 +399,8 @@ function render() {
     totalCostRow.innerHTML = `<span>total cost</span><span class="val">− ${euro(totalCost)}</span>`;
     box.appendChild(totalCostRow);
 
-    addMilestoneRow(box, 'total principal paid', `+ ${euro(principalPaid)}`, { pct: `${principalPct.toFixed(0)}% of payments` });
-    addMilestoneRow(box, 'total interest paid', `− ${euro(amort.cumInterest)}`, { pct: `${interestPct.toFixed(0)}% of payments` });
+    addMilestoneRow(box, 'total principal paid', `+ ${euro(principalPaid)}`, { pct: `${principalPct.toFixed(0)}% ${emiPctLabel}` });
+    addMilestoneRow(box, 'total interest paid', `− ${euro(amort.cumInterest)}`, { pct: `${interestPct.toFixed(0)}% ${emiPctLabel}` });
     addMilestoneRow(box, 'total tax rebate', `+ ${euro(amort.cumTaxBenefit)}`, { pct: `${rebatePct.toFixed(0)}% of interest recovered` });
     addMilestoneRow(box, 'net interest paid', `− ${euro(netInterestPaid)}`, { pct: 'total interest − total tax rebate' });
     addMilestoneRow(box, 'total home value gain', `+ ${euro(appreciationGain)}`, { pct: `${appreciationPct.toFixed(1)}%/yr` });
