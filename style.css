@@ -113,6 +113,38 @@ body {
   color: var(--muted);
 }
 
+/* ---------- collapsible sections ---------- */
+
+.collapsible .card-head {
+  cursor: pointer;
+  user-select: none;
+}
+
+.collapsible.collapsed .card-head {
+  margin-bottom: 0;
+}
+
+.collapsible.collapsed .card-body {
+  display: none;
+}
+
+.collapse-toggle {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0 0 0 auto;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.collapsible.collapsed .collapse-toggle {
+  transform: rotate(-90deg);
+}
+
 /* ---------- form fields ---------- */
 
 .from-row {

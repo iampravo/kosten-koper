@@ -471,6 +471,15 @@ function init() {
     input.addEventListener('input', debouncedRender);
   });
 
+  document.querySelectorAll('.collapsible').forEach((section) => {
+    const head = section.querySelector('.card-head');
+    const toggle = section.querySelector('.collapse-toggle');
+    head.addEventListener('click', () => {
+      const collapsed = section.classList.toggle('collapsed');
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+    });
+  });
+
   el('constructionToggle').querySelectorAll('.toggle-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       constructionType = btn.dataset.type;

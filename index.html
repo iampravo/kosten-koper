@@ -253,56 +253,64 @@
       </div>
     </div>
 
-    <section class="card card-wide">
+    <section class="card card-wide collapsible">
       <div class="card-head">
         <label>own vs. rent</label>
         <span class="hint">default 5%/yr ≈ Amstelveen's 3-yr CBS/Kadaster price CAGR — edit for your area</span>
+        <button type="button" class="collapse-toggle" aria-label="collapse section" aria-expanded="true">▾</button>
       </div>
-      <div class="from-row">
-        <div class="field">
-          <label for="comparableRent">comparable rent (€/mo)</label>
-          <input type="text" id="comparableRent" inputmode="numeric" placeholder="1.800" autocomplete="off">
+      <div class="card-body">
+        <div class="from-row">
+          <div class="field">
+            <label for="comparableRent">comparable rent (€/mo)</label>
+            <input type="text" id="comparableRent" inputmode="numeric" placeholder="1.800" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="appreciationRate">home value growth (%/yr)</label>
+            <input type="text" id="appreciationRate" inputmode="decimal" value="5" autocomplete="off">
+          </div>
         </div>
-        <div class="field">
-          <label for="appreciationRate">home value growth (%/yr)</label>
-          <input type="text" id="appreciationRate" inputmode="decimal" value="5" autocomplete="off">
+
+        <div class="slider-row">
+          <label for="ownVsRentSlider">time horizon</label>
+          <span class="slider-value" id="ownVsRentSliderLabel">3 years</span>
+          <input type="range" id="ownVsRentSlider" min="1" max="360" value="36" step="1">
         </div>
-      </div>
 
-      <div class="slider-row">
-        <label for="ownVsRentSlider">time horizon</label>
-        <span class="slider-value" id="ownVsRentSliderLabel">3 years</span>
-        <input type="range" id="ownVsRentSlider" min="1" max="360" value="36" step="1">
+        <div class="own-rent-box" id="ownVsRentBox"></div>
       </div>
-
-      <div class="own-rent-box" id="ownVsRentBox"></div>
     </section>
 
-    <section class="card card-wide">
+    <section class="card card-wide collapsible">
       <div class="card-head">
         <label>sell after...</label>
         <span class="hint">same home-value growth assumption as above · profit or loss if you sell at this point</span>
+        <button type="button" class="collapse-toggle" aria-label="collapse section" aria-expanded="true">▾</button>
       </div>
-      <div class="from-row">
-        <div class="field field-grow">
-          <label for="sellingCostPct">selling costs — agent commission (%, incl. btw)</label>
-          <input type="text" id="sellingCostPct" inputmode="decimal" value="1.3" autocomplete="off">
+      <div class="card-body">
+        <div class="from-row">
+          <div class="field field-grow">
+            <label for="sellingCostPct">selling costs — agent commission (%, incl. btw)</label>
+            <input type="text" id="sellingCostPct" inputmode="decimal" value="1.3" autocomplete="off">
+          </div>
         </div>
-      </div>
 
-      <div class="slider-row">
-        <label for="resellSlider">time horizon</label>
-        <span class="slider-value" id="resellSliderLabel">3 years</span>
-        <input type="range" id="resellSlider" min="1" max="360" value="36" step="1">
-      </div>
+        <div class="slider-row">
+          <label for="resellSlider">time horizon</label>
+          <span class="slider-value" id="resellSliderLabel">3 years</span>
+          <input type="range" id="resellSlider" min="1" max="360" value="36" step="1">
+        </div>
 
-      <div class="own-rent-box" id="resellBox"></div>
+        <div class="own-rent-box" id="resellBox"></div>
+      </div>
     </section>
 
-    <section class="card card-wide">
+    <section class="card card-wide collapsible">
       <div class="card-head">
         <label>what to check before you buy</label>
+        <button type="button" class="collapse-toggle" aria-label="collapse section" aria-expanded="true">▾</button>
       </div>
+      <div class="card-body">
       <div class="checklist-grid">
         <div class="checklist-group">
           <div class="checklist-group-label">contract clauses to insist on</div>
@@ -317,6 +325,18 @@
           <div class="checklist-item">
             <span class="checklist-term">NHG contingency</span>
             <span class="checklist-desc">if financing with NHG, make the offer conditional on NHG approval too</span>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-term">age clause</span>
+            <span class="checklist-desc"><em>ouderdomsclausule</em> — near-universal on older homes: seller isn't liable for defects tied to the property's age (foundation, wiring, insulation) not meeting current standards</span>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-term">non-occupancy clause</span>
+            <span class="checklist-desc"><em>niet-zelfbewoningsclausule</em> — appears when the seller never lived there (rented out, inherited); they can't vouch for hidden defects, so lean harder on the structural survey</span>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-term">asbestos clause</span>
+            <span class="checklist-desc"><em>asbestclausule</em> — get the contract to state explicitly whether asbestos is present and who's liable, not just a verbal assurance</span>
           </div>
         </div>
 
@@ -371,6 +391,7 @@
             <span class="checklist-desc"><em>bodemverontreiniging</em> — worth checking near former industrial sites or if there was ever an underground oil tank</span>
           </div>
         </div>
+      </div>
       </div>
     </section>
 
