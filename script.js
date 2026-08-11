@@ -110,6 +110,27 @@ function attachEuroFormatting(input) {
   });
 }
 
+// Appends a trailing "%" to rate fields, keeping the cursor to its left
+// (so typing still feels like typing into a plain number field).
+function formatPercentValue(raw) {
+  return raw ? `${raw}%` : '';
+}
+
+function attachPercentFormatting(input) {
+  input.addEventListener('input', () => {
+    const prevValue = input.value;
+    const prevCursor = input.selectionStart ?? prevValue.length;
+    const raw = prevValue.replace(/%/g, '');
+    input.value = formatPercentValue(raw);
+    const pos = Math.min(prevCursor, raw.length);
+    input.setSelectionRange(pos, pos);
+  });
+}
+
+const PERCENT_FIELD_IDS = [
+  'interestRate', 'deductionRate', 'maintenancePct', 'appreciationRate', 'sellingCostPct',
+];
+
 const EURO_FIELD_IDS = [
   'price', 'hoaFee', 'downPayment', 'notaryFee', 'valuationFee',
   'advisorFee', 'surveyFee', 'moveInFee', 'renovationFee', 'checksFee',
@@ -423,6 +444,12 @@ function init() {
     const input = el(id);
     input.value = formatEuroValue(input.value.replace(/\D/g, ''));
     attachEuroFormatting(input);
+  });
+
+  PERCENT_FIELD_IDS.forEach((id) => {
+    const input = el(id);
+    input.value = formatPercentValue(input.value.replace(/%/g, ''));
+    attachPercentFormatting(input);
   });
 
   const debouncedRender = debounce(render, 80);
